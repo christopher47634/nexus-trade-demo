@@ -15,6 +15,9 @@ import {
   Flame,
   ChevronDown,
   ChevronUp,
+  ShieldAlert,
+  ShieldCheck,
+  Shield,
 } from "lucide-react";
 import { sectorIconMap, SectorFallback } from "@/components/icons/SectorIcons";
 import SectorHeroArtwork from "@/components/sector/SectorHeroArtwork";
@@ -239,6 +242,8 @@ export default function SectorDetailPage() {
             </div>
 
             <div className="text-right">
+              {/* Risk level badge */}
+              <RiskLevelBadge level={sector.riskLevel} />
               <motion.div
                 layoutId={`sector-change-${sectorId}`}
                 initial={{ opacity: 0, scale: 0.8 }}
@@ -282,7 +287,13 @@ export default function SectorDetailPage() {
         </motion.div>
 
         {/* Sector trend chart */}
-        <SectorTrendChart data={trendData} color={sector.accentColor} />
+        <SectorTrendChart
+          data={trendData}
+          color={sector.accentColor}
+          trend={sector.trend}
+          capitalInflow={sector.capitalInflow}
+          riskLevel={sector.riskLevel}
+        />
         {sectorStocks.length === 0 ? (
           <EmptyState title="暂无成分股数据" description="该板块暂无成分股信息" />
         ) : (
@@ -406,9 +417,15 @@ export default function SectorDetailPage() {
 function SectorTrendChart({
   data,
   color,
+  trend,
+  capitalInflow,
+  riskLevel,
 }: {
   data: { time: number; value: number }[];
   color: string;
+  trend: "up" | "down" | "sideways";
+  capitalInflow: string;
+  riskLevel: "low" | "medium" | "high";
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -514,10 +531,85 @@ function SectorTrendChart({
       transition={{ delay: 0.35 }}
       className="glass p-4 rounded-2xl"
     >
-      <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">
-        板块趋势
-      </h3>
+      <div className="flex items-baseline gap-2 mb-3">
+        <h3 className="text-sm font-semibold text-[var(--text-primary)]">
+          板块趋势
+        </h3>
+        <span className="text-[10px] text-[var(--text-muted)]">近60日走势</span>
+      </div>
       <div ref={containerRef} className="w-full" style={{ height: 200 }} />
+
+      {/* Trend analysis text */}
+      <div className="mt-3 pt-3 border-t border-[var(--border-subtle)] flex items-start gap-2">
+        <div className="flex items-center gap-1.5 shrink-0">
+          <div
+            className="w-1.5 h-1.5 rounded-full"
+            style={{
+              background:
+                trend === "up"
+                  ? "var(--up)"
+                  : trend === "down"
+                    ? "var(--down)"
+                    : "var(--accent)",
+            }}
+          />
+          <span className="text-[10px] font-medium text-[var(--text-muted)] uppercase tracking-wider">
+            板块分析
+          </span>
+        </div>
+        <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+          {trend === "up" &&
+            "近一月板块整体呈上行趋势，资金持续流入，关注龙头股表现"}
+          {trend === "down" &&
+            "近期板块承压，资金净流出，注意控制仓位"}
+          {trend === "sideways" &&
+            "板块维持震荡格局，量能萎缩，等待方向选择"}
+          {riskLevel === "high" && "。高风险板块，注意仓位管理。"}
+          {riskLevel === "medium" && "。中等风险，适度参与。"}
+          {riskLevel === "low" && "。风险可控。"}
+          {capitalInflow.startsWith("+") ? " 当日主力资金净流入。" : " 当日主力资金净流出。"}
+        </p>
+      </div>
     </motion.div>
+  );
+}
+
+function RiskLevelBadge({ level }: { level: "low" | "medium" | "high" }) {
+  const config = {
+    low: {
+      label: "低风险",
+      color: "#34D399",
+      bg: "rgba(52,211,153,0.12)",
+      border: "rgba(52,211,153,0.25)",
+      icon: <ShieldCheck size={12} />,
+    },
+    medium: {
+      label: "中风险",
+      color: "#FBBF24",
+      bg: "rgba(251,191,36,0.12)",
+      border: "rgba(251,191,36,0.25)",
+      icon: <Shield size={12} />,
+    },
+    high: {
+      label: "高风险",
+      color: "#EF4444",
+      bg: "rgba(239,68,68,0.12)",
+      border: "rgba(239,68,68,0.25)",
+      icon: <ShieldAlert size={12} />,
+    },
+  };
+  const c = config[level];
+  return (
+    <span
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium mb-2"
+      style={{
+        color: c.color,
+        background: c.bg,
+        border: `1px solid ${c.border}`,
+      }}
+    >
+      {c.icon}
+      {c.label}
+    </span>
   );
 }

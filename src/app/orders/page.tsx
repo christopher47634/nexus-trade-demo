@@ -3,16 +3,57 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ClipboardList, BarChart3, PlayCircle } from "lucide-react";
+import { ClipboardList, BarChart3, PlayCircle, AlertCircle } from "lucide-react";
 import { getOrders, MockOrder } from "@/mock/orders";
 import EmptyState from "@/components/common/EmptyState";
 
-const STATUS_MAP: Record<MockOrder["status"], { label: string; color: string; bg: string }> = {
-  submitted: { label: "已提交", color: "#60A5FA", bg: "rgba(96,165,250,0.12)" },
-  matching:  { label: "撮合中", color: "#FBBF24", bg: "rgba(251,191,36,0.12)" },
-  filled:    { label: "已成交", color: "#34D399", bg: "rgba(52,211,153,0.12)" },
-  cancelled: { label: "已撤单", color: "#94A3B8", bg: "rgba(148,163,184,0.12)" },
+const STATUS_MAP: Record<
+  MockOrder["status"],
+  { label: string; color: string; bg: string }
+> = {
+  submitted: {
+    label: "已提交",
+    color: "#60A5FA",
+    bg: "rgba(96,165,250,0.12)",
+  },
+  matching: {
+    label: "撮合中",
+    color: "#FBBF24",
+    bg: "rgba(251,191,36,0.12)",
+  },
+  partial_filled: {
+    label: "部分成交",
+    color: "#A78BFA",
+    bg: "rgba(167,139,250,0.12)",
+  },
+  filled: {
+    label: "已成交",
+    color: "#34D399",
+    bg: "rgba(52,211,153,0.12)",
+  },
+  cancelled: {
+    label: "已撤单",
+    color: "#94A3B8",
+    bg: "rgba(148,163,184,0.12)",
+  },
+  rejected: {
+    label: "已拒绝",
+    color: "#EF4444",
+    bg: "rgba(239,68,68,0.12)",
+  },
 };
+
+function formatTime(ts: number): string {
+  if (!ts) return "-";
+  const d = new Date(ts);
+  return d.toLocaleString("zh-CN", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+}
 
 function relativeTime(ts: number): string {
   const diff = Date.now() - ts;
@@ -30,6 +71,7 @@ function relativeTime(ts: number): string {
 export default function OrdersPage() {
   const router = useRouter();
   const [orders, setOrders] = useState<MockOrder[]>([]);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
     setOrders(getOrders());
@@ -45,6 +87,10 @@ export default function OrdersPage() {
     router.push("/");
   };
 
+  const toggleExpand = (id: string) => {
+    setExpandedId(expandedId === id ? null : id);
+  };
+
   return (
     <div className="p-6 max-w-5xl mx-auto">
       <motion.div
@@ -54,7 +100,9 @@ export default function OrdersPage() {
         className="flex items-center gap-3 mb-6"
       >
         <ClipboardList size={20} className="text-[var(--accent)]" />
-        <h1 className="text-lg font-semibold text-[var(--text-primary)]">委托订单</h1>
+        <h1 className="text-lg font-semibold text-[var(--text-primary)]">
+          委托订单
+        </h1>
         <span className="text-sm text-[var(--text-muted)]">
           共 {orders.length} 笔
         </span>
@@ -98,15 +146,15 @@ export default function OrdersPage() {
           className="glass overflow-hidden rounded-xl"
         >
           {/* Table Header */}
-          <div className="grid grid-cols-[140px_1fr_80px_100px_80px_110px_90px_100px] gap-2 px-5 py-3 text-xs font-medium text-[var(--text-muted)] border-b border-[var(--border-subtle)]">
-            <span>订单编号</span>
+          <div className="grid grid-cols-[160px_1fr_70px_90px_80px_110px_80px_140px] gap-2 px-5 py-3 text-xs font-medium text-[var(--text-muted)] border-b border-[var(--border-subtle)]">
+            <span>委托编号</span>
             <span>股票</span>
             <span>方向</span>
             <span className="text-right">价格</span>
             <span className="text-right">数量</span>
             <span className="text-right">金额</span>
             <span className="text-center">状态</span>
-            <span className="text-right">时间</span>
+            <span className="text-right">委托时间</span>
           </div>
 
           {/* Table Body */}
@@ -114,6 +162,20 @@ export default function OrdersPage() {
             <AnimatePresence initial={false}>
               {orders.map((order, i) => {
                 const st = STATUS_MAP[order.status];
+                const isExpanded = expandedId === order.id;
+                const fillPercent =
+                  order.quantity > 0
+                    ? (order.filledQuantity / order.quantity) * 100
+                    : 0;
+                const netAmount =
+                  order.side === "buy"
+                    ? order.totalAmount +
+                      (order.commission || 0) +
+                      (order.stampTax || 0)
+                    : order.totalAmount -
+                      (order.commission || 0) -
+                      (order.stampTax || 0);
+
                 return (
                   <motion.div
                     key={order.id}
@@ -121,41 +183,191 @@ export default function OrdersPage() {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}
                     transition={{ duration: 0.25, delay: i * 0.03 }}
-                    className="grid grid-cols-[140px_1fr_80px_100px_80px_110px_90px_100px] gap-2 px-5 py-3 text-sm items-center hover:bg-[var(--surface-2)] transition-colors duration-150"
                   >
-                    <span className="text-[var(--text-muted)] text-xs font-mono truncate">
-                      {order.id.slice(0, 16)}…
-                    </span>
-                    <span className="text-[var(--text-primary)] font-medium truncate">
-                      {order.stockName}
-                      <span className="ml-1.5 text-[var(--text-muted)] text-xs">{order.stockCode}</span>
-                    </span>
-                    <span
-                      className="text-sm font-medium"
-                      style={{ color: order.side === "buy" ? "var(--up)" : "var(--down)" }}
+                    <div
+                      onClick={() => toggleExpand(order.id)}
+                      className="grid grid-cols-[160px_1fr_70px_90px_80px_110px_80px_140px] gap-2 px-5 py-3 text-sm items-center hover:bg-[var(--surface-2)] transition-colors duration-150 cursor-pointer"
                     >
-                      {order.side === "buy" ? "买入" : "卖出"}
-                    </span>
-                    <span className="text-right text-[var(--text-primary)] font-mono">
-                      {order.price.toFixed(2)}
-                    </span>
-                    <span className="text-right text-[var(--text-secondary)] font-mono">
-                      {order.quantity.toLocaleString()}
-                    </span>
-                    <span className="text-right text-[var(--text-secondary)] font-mono">
-                      {order.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                    </span>
-                    <span className="flex justify-center">
-                      <span
-                        className="px-2 py-0.5 rounded-full text-xs font-medium"
-                        style={{ color: st.color, backgroundColor: st.bg }}
-                      >
-                        {st.label}
+                      <span className="text-[var(--text-secondary)] text-xs font-mono font-semibold">
+                        {order.id}
                       </span>
-                    </span>
-                    <span className="text-right text-[var(--text-muted)] text-xs">
-                      {relativeTime(order.createdAt)}
-                    </span>
+                      <span className="text-[var(--text-primary)] font-medium truncate">
+                        {order.stockName}
+                        <span className="ml-1.5 text-[var(--text-muted)] text-xs">
+                          {order.stockCode}
+                        </span>
+                      </span>
+                      <span
+                        className="text-sm font-medium"
+                        style={{
+                          color:
+                            order.side === "buy"
+                              ? "var(--up)"
+                              : "var(--down)",
+                        }}
+                      >
+                        {order.side === "buy" ? "买入" : "卖出"}
+                      </span>
+                      <span className="text-right text-[var(--text-primary)] font-mono">
+                        {order.price.toFixed(2)}
+                      </span>
+                      <span className="text-right text-[var(--text-secondary)] font-mono">
+                        {order.quantity.toLocaleString()}
+                      </span>
+                      <span className="text-right text-[var(--text-secondary)] font-mono">
+                        {order.totalAmount.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                        })}
+                      </span>
+                      <span className="flex justify-center">
+                        <span
+                          className="px-2 py-0.5 rounded-full text-xs font-medium"
+                          style={{ color: st.color, backgroundColor: st.bg }}
+                        >
+                          {st.label}
+                        </span>
+                      </span>
+                      <span className="text-right text-[var(--text-muted)] text-xs">
+                        {relativeTime(order.createdAt)}
+                      </span>
+                    </div>
+
+                    {/* Expanded detail row */}
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-5 py-4 bg-[var(--surface-1)] border-t border-[var(--border-subtle)]">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                              {/* Commission */}
+                              <div>
+                                <span className="text-[var(--text-muted)] block mb-1">
+                                  佣金
+                                </span>
+                                <span className="text-[var(--text-primary)] font-mono-nums">
+                                  {order.commission
+                                    ? `¥${order.commission.toFixed(2)}`
+                                    : "-"}
+                                </span>
+                              </div>
+                              {/* Stamp tax */}
+                              <div>
+                                <span className="text-[var(--text-muted)] block mb-1">
+                                  印花税
+                                </span>
+                                <span className="text-[var(--text-primary)] font-mono-nums">
+                                  {order.stampTax
+                                    ? `¥${order.stampTax.toFixed(2)}`
+                                    : "¥0.00"}
+                                </span>
+                              </div>
+                              {/* Net amount */}
+                              <div>
+                                <span className="text-[var(--text-muted)] block mb-1">
+                                  {order.side === "buy"
+                                    ? "实际扣款"
+                                    : "实际到账"}
+                                </span>
+                                <span className="text-[var(--text-primary)] font-mono-nums font-semibold">
+                                  {order.commission
+                                    ? `¥${netAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}`
+                                    : "-"}
+                                </span>
+                              </div>
+                              {/* Avg fill price */}
+                              <div>
+                                <span className="text-[var(--text-muted)] block mb-1">
+                                  成交均价
+                                </span>
+                                <span className="text-[var(--text-primary)] font-mono-nums">
+                                  {order.avgFillPrice
+                                    ? `¥${order.avgFillPrice.toFixed(2)}`
+                                    : "-"}
+                                </span>
+                              </div>
+                              {/* Created time */}
+                              <div>
+                                <span className="text-[var(--text-muted)] block mb-1">
+                                  委托时间
+                                </span>
+                                <span className="text-[var(--text-secondary)] font-mono-nums text-[11px]">
+                                  {formatTime(order.createdAt)}
+                                </span>
+                              </div>
+                              {/* Filled time */}
+                              <div>
+                                <span className="text-[var(--text-muted)] block mb-1">
+                                  成交时间
+                                </span>
+                                <span className="text-[var(--text-secondary)] font-mono-nums text-[11px]">
+                                  {formatTime(order.filledAt || 0)}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Partial fill progress bar */}
+                            {order.status === "partial_filled" &&
+                              order.filledQuantity > 0 && (
+                                <div className="mt-3 pt-3 border-t border-[var(--border-subtle)]">
+                                  <div className="flex items-center justify-between text-xs mb-1.5">
+                                    <span className="text-[var(--text-muted)]">
+                                      成交进度
+                                    </span>
+                                    <span className="text-[var(--text-secondary)] font-mono-nums">
+                                      {order.filledQuantity.toLocaleString()} /{" "}
+                                      {order.quantity.toLocaleString()} 股
+                                      ({fillPercent.toFixed(0)}%)
+                                    </span>
+                                  </div>
+                                  <div className="w-full h-2 rounded-full bg-[var(--surface-2)] overflow-hidden">
+                                    <motion.div
+                                      initial={{ width: 0 }}
+                                      animate={{
+                                        width: `${fillPercent}%`,
+                                      }}
+                                      transition={{
+                                        duration: 0.5,
+                                        ease: "easeOut",
+                                      }}
+                                      className="h-full rounded-full"
+                                      style={{
+                                        background:
+                                          "linear-gradient(90deg, var(--accent), #A78BFA)",
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                              )}
+
+                            {/* Rejected reason */}
+                            {order.status === "rejected" &&
+                              order.rejectReason && (
+                                <div className="mt-3 pt-3 border-t border-[var(--border-subtle)]">
+                                  <div className="flex items-start gap-2 p-2.5 rounded-lg"
+                                    style={{
+                                      background: "rgba(239,68,68,0.08)",
+                                      border: "1px solid rgba(239,68,68,0.15)",
+                                    }}
+                                  >
+                                    <AlertCircle
+                                      size={14}
+                                      className="text-red-400 mt-0.5 shrink-0"
+                                    />
+                                    <span className="text-xs text-red-400">
+                                      拒绝原因: {order.rejectReason}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </motion.div>
                 );
               })}
@@ -163,6 +375,18 @@ export default function OrdersPage() {
           </div>
         </motion.div>
       )}
+
+      {/* Disclaimer */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5 }}
+        className="mt-8 text-center"
+      >
+        <p className="text-[10px] text-[var(--text-muted)] leading-relaxed opacity-50">
+          本系统为模拟交易平台，所有数据均为虚拟数据，不涉及真实资金和证券。投资有风险，入市需谨慎。
+        </p>
+      </motion.div>
     </div>
   );
 }

@@ -37,7 +37,7 @@ export default function MarketOverview() {
       </div>
 
       {/* Fear & Greed Gauge */}
-      <div className="flex items-center gap-4 mb-4">
+      <div className="flex items-center justify-center mb-4">
         <div className="relative w-20 h-20">
           <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
             <circle
@@ -78,19 +78,49 @@ export default function MarketOverview() {
             </span>
           </div>
         </div>
-        <div className="flex-1 space-y-2">
-          {sentiment.signals.slice(0, 4).map((sig) => (
+      </div>
+
+      {/* Signals panel — terminal style */}
+      <div className="mb-4">
+        <div className="flex items-center gap-1.5 mb-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] pulse-dot" />
+          <span className="text-[9px] text-[var(--text-muted)] uppercase tracking-wider font-medium">
+            技术信号
+          </span>
+        </div>
+        <div
+          className="rounded-lg overflow-hidden"
+          style={{
+            border: "1px solid rgba(255,255,255,0.04)",
+            background: "rgba(2,6,18,0.3)",
+          }}
+        >
+          {/* Header */}
+          <div className="grid grid-cols-[1fr_70px_40px] gap-2 px-3 py-1.5 text-[9px] text-[var(--text-muted)] uppercase tracking-wider border-b border-[var(--border-subtle)]">
+            <span>指标</span>
+            <span className="text-right">数值</span>
+            <span className="text-center">信号</span>
+          </div>
+          {sentiment.signals.map((sig, i) => (
             <div
               key={sig.name}
-              className="flex items-center justify-between text-xs"
+              className="grid grid-cols-[1fr_70px_40px] gap-2 px-3 py-1.5 text-xs items-center"
+              style={{
+                borderBottom:
+                  i < sentiment.signals.length - 1
+                    ? "1px solid rgba(255,255,255,0.03)"
+                    : "none",
+              }}
             >
-              <span className="text-[var(--text-muted)]">{sig.name}</span>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[var(--text-secondary)] font-mono-nums">
-                  {sig.value}
-                </span>
+              <span className="text-[var(--text-muted)] text-[11px]">
+                {sig.name}
+              </span>
+              <span className="text-right text-[var(--text-secondary)] font-mono-nums text-[11px]">
+                {sig.value}
+              </span>
+              <span className="flex items-center justify-center">
                 {getSignalIcon(sig.signal)}
-              </div>
+              </span>
             </div>
           ))}
         </div>
@@ -119,7 +149,11 @@ export default function MarketOverview() {
         <div className="flex flex-col gap-1 p-2.5 rounded-lg bg-[var(--surface-1)]">
           <span className="text-[10px] text-[var(--text-muted)]">趋势</span>
           <span className="text-sm font-semibold text-[var(--accent)] font-mono-nums">
-            {sentiment.shortTrend === "bullish" ? "偏多" : sentiment.shortTrend === "bearish" ? "偏空" : "震荡"}
+            {sentiment.shortTrend === "bullish"
+              ? "偏多"
+              : sentiment.shortTrend === "bearish"
+                ? "偏空"
+                : "震荡"}
           </span>
         </div>
       </div>
