@@ -20,19 +20,11 @@ import {
   Flame,
   Crown,
 } from "lucide-react";
-import dynamic from "next/dynamic";
 import { useRef, useState, useEffect } from "react";
 import SectorVisualBackground from "@/components/sector/SectorVisualBackground";
 import HoverGlow from "@/components/sector-visuals/HoverGlow";
-
-const OpticalCanvas = dynamic(
-  () => import("@/components/sector-visuals/canvas/OpticalCanvas"),
-  { ssr: false }
-);
-const ComputeCanvas = dynamic(
-  () => import("@/components/sector-visuals/canvas/ComputeCanvas"),
-  { ssr: false }
-);
+import { isCanvasVisualsEnabled } from "@/lib/feature-flags";
+import { getSectorCanvas } from "@/components/sector-visuals/getSectorCanvas";
 
 const iconMap: Record<string, React.ElementType> = {
   Zap,
@@ -73,7 +65,7 @@ function MiniSparkline({ color }: { color: string }) {
 }
 
 /** Wrapper that measures its container and renders the correct canvas */
-function CanvasCardBackground({ sectorId }: { sectorId: string }) {
+function CanvasCardBackground({ visualType }: { visualType: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ width: 0, height: 0 });
 
@@ -94,17 +86,12 @@ function CanvasCardBackground({ sectorId }: { sectorId: string }) {
 
   const hasSize = dims.width > 0 && dims.height > 0;
 
+  const CanvasComponent = getSectorCanvas(visualType);
+
   return (
     <div ref={containerRef} className="absolute inset-0 z-0">
-      {hasSize && sectorId === "optical-communication" && (
-        <OpticalCanvas
-          width={dims.width}
-          height={dims.height}
-          animationsEnabled
-        />
-      )}
-      {hasSize && sectorId === "computing-power" && (
-        <ComputeCanvas
+      {hasSize && CanvasComponent && (
+        <CanvasComponent
           width={dims.width}
           height={dims.height}
           animationsEnabled
@@ -130,8 +117,7 @@ export default function HotSectorGrid() {
         const isUp = sector.changePercent >= 0;
         const isTop3 = i < 3;
         const isRank1 = i === 0;
-        const hasCanvasVisual =
-          sector.id === "optical-communication" || sector.id === "computing-power";
+        const hasCanvasVisual = isCanvasVisualsEnabled() && !!getSectorCanvas(sector.visualType);
 
         return (
           <motion.div
@@ -176,9 +162,9 @@ export default function HotSectorGrid() {
               intensity="subtle"
             />
 
-            {/* Layer 2: Canvas background for 光通信 and 算力 only */}
+            {/* Layer 2: Canvas background for all sectors (feature-flagged) */}
             {hasCanvasVisual && (
-              <CanvasCardBackground sectorId={sector.id} />
+              <CanvasCardBackground visualType={sector.visualType} />
             )}
 
             {/* Layer 3: Left-side dark overlay — ensures text readability */}
@@ -193,7 +179,7 @@ export default function HotSectorGrid() {
             {hasCanvasVisual && (
               <HoverGlow
                 enabled
-                color={sector.id === "optical-communication" ? "#D4A574" : "#60A5FA"}
+                color={sector.accentColor}
                 radius={170}
                 opacity={0.14}
               />

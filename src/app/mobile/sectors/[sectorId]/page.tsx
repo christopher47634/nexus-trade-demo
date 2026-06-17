@@ -27,6 +27,7 @@ import {
   Wine,
 } from "lucide-react";
 import SectorHeroArtwork from "@/components/sector/SectorHeroArtwork";
+import MobileCanvasWrapper from "@/components/sector-visuals/MobileCanvasWrapper";
 import HeroKpiCard from "@/components/sector/HeroKpiCard";
 import ErrorState from "@/components/common/ErrorState";
 
@@ -120,6 +121,15 @@ export default function MobileSectorDetailPage() {
           <SectorHeroArtwork
             visualType={sector.visualType}
             accentColor={sector.accentColor}
+          />
+        </div>
+
+        {/* Mobile Canvas 2D background — behind text/KPI, reduced size */}
+        <div style={{ opacity: 0.5 }}>
+          <MobileCanvasWrapper
+            visualType={sector.visualType}
+            width={360}
+            height={200}
           />
         </div>
 
