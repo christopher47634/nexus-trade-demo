@@ -7,6 +7,7 @@ interface MiningCanvasProps {
   height: number;
   animationsEnabled?: boolean;
   hovered?: boolean;
+  hoverIntensity?: number;
 }
 
 /**
@@ -25,6 +26,7 @@ export default function MiningCanvas({
   height,
   animationsEnabled = true,
   hovered = false,
+  hoverIntensity = 0,
 }: MiningCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animFrameRef = useRef<number>(0);
@@ -32,6 +34,7 @@ export default function MiningCanvas({
   const timeRef = useRef(0);
   const hoveredRef = useRef(false);
   const animEnabledRef = useRef(animationsEnabled);
+  const hoverIntensityRef = useRef(0);
 
   useEffect(() => {
     hoveredRef.current = hovered;
@@ -40,6 +43,10 @@ export default function MiningCanvas({
   useEffect(() => {
     animEnabledRef.current = animationsEnabled;
   }, [animationsEnabled]);
+
+  useEffect(() => {
+    hoverIntensityRef.current = hoverIntensity ?? 0;
+  }, [hoverIntensity]);
 
   const draw = useCallback(
     (w: number, h: number, t: number, isHover: boolean, animOn: boolean) => {
@@ -110,7 +117,7 @@ export default function MiningCanvas({
 
         oreVeins.forEach((vein) => {
           const hoverBoost = isHover ? 1.6 : 1;
-          ctx.globalAlpha = Math.min(vein.baseOpacity * veinPulse * hoverBoost * 1.5, 0.34);
+          ctx.globalAlpha = Math.min(vein.baseOpacity * veinPulse * hoverBoost * 1.5 + hoverIntensityRef.current * 0.04, 0.38);
           ctx.strokeStyle = vein.color;
           ctx.lineWidth = 0.8;
           ctx.beginPath();

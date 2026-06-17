@@ -7,6 +7,7 @@ interface RoboticsCanvasProps {
   height: number;
   animationsEnabled?: boolean;
   hovered?: boolean;
+  hoverIntensity?: number;
 }
 
 /**
@@ -25,6 +26,7 @@ export default function RoboticsCanvas({
   height,
   animationsEnabled = true,
   hovered = false,
+  hoverIntensity = 0,
 }: RoboticsCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animFrameRef = useRef<number>(0);
@@ -32,6 +34,7 @@ export default function RoboticsCanvas({
   const timeRef = useRef(0);
   const hoveredRef = useRef(false);
   const animEnabledRef = useRef(animationsEnabled);
+  const hoverIntensityRef = useRef(0);
 
   useEffect(() => {
     hoveredRef.current = hovered;
@@ -40,6 +43,10 @@ export default function RoboticsCanvas({
   useEffect(() => {
     animEnabledRef.current = animationsEnabled;
   }, [animationsEnabled]);
+
+  useEffect(() => {
+    hoverIntensityRef.current = hoverIntensity ?? 0;
+  }, [hoverIntensity]);
 
   const draw = useCallback(
     (w: number, h: number, t: number, isHover: boolean, animOn: boolean) => {
@@ -255,7 +262,7 @@ export default function RoboticsCanvas({
             : 0.28;
 
           // Fill with opacity
-          ctx.globalAlpha = Math.min(pulseAlpha * 0.12 * hoverAlpha, 0.30);
+          ctx.globalAlpha = Math.min(pulseAlpha * 0.12 * hoverAlpha + hoverIntensityRef.current * 0.04, 0.34);
           ctx.fillStyle = joint.color;
           ctx.beginPath();
           ctx.arc(joint.x, joint.y, joint.r, 0, Math.PI * 2);

@@ -56,6 +56,7 @@ export interface CanvasComponentProps {
   height: number;
   animationsEnabled?: boolean;
   hovered?: boolean;
+  hoverIntensity?: number;
 }
 
 /**

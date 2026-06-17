@@ -65,7 +65,7 @@ function MiniSparkline({ color }: { color: string }) {
 }
 
 /** Wrapper that measures its container and renders the correct canvas */
-function CanvasCardBackground({ visualType }: { visualType: string }) {
+function CanvasCardBackground({ visualType, hoverIntensity = 0 }: { visualType: string; hoverIntensity?: number }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ width: 0, height: 0 });
 
@@ -95,6 +95,7 @@ function CanvasCardBackground({ visualType }: { visualType: string }) {
           width={dims.width}
           height={dims.height}
           animationsEnabled
+          hoverIntensity={hoverIntensity}
         />
       )}
       {/* Dark overlay for text readability over canvas */}
@@ -109,6 +110,12 @@ function CanvasCardBackground({ visualType }: { visualType: string }) {
 export default function HotSectorGrid() {
   const router = useRouter();
   const sortedSectors = [...sectors].sort((a, b) => a.hotRank - b.hotRank);
+  const [hoveredSectorId, setHoveredSectorId] = useState<string | null>(null);
+  const [isTouch, setIsTouch] = useState(false);
+
+  useEffect(() => {
+    setIsTouch(!window.matchMedia("(hover: hover)").matches);
+  }, []);
 
   return (
     <div className="grid grid-cols-5 gap-3" id="sectors">
@@ -135,7 +142,10 @@ export default function HotSectorGrid() {
               ease: [0.25, 0.46, 0.45, 0.94],
             }}
             whileHover={{ scale: 1.02, y: -4 }}
+            whileTap={isTouch ? { scale: 0.98 } : undefined}
             onClick={() => router.push(`/sectors/${sector.id}`)}
+            onMouseEnter={() => setHoveredSectorId(sector.id)}
+            onMouseLeave={() => setHoveredSectorId(null)}
             className={cn(
               "group relative overflow-hidden rounded-2xl cursor-pointer",
               isRank1 && "rank-1-glow"
@@ -164,7 +174,10 @@ export default function HotSectorGrid() {
 
             {/* Layer 2: Canvas background for all sectors (feature-flagged) */}
             {hasCanvasVisual && (
-              <CanvasCardBackground visualType={sector.visualType} />
+              <CanvasCardBackground
+                visualType={sector.visualType}
+                hoverIntensity={hoveredSectorId === sector.id ? 1 : 0}
+              />
             )}
 
             {/* Layer 3: Left-side dark overlay — ensures text readability */}

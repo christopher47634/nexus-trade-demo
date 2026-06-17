@@ -7,6 +7,7 @@ interface SemiconductorCanvasProps {
   height: number;
   animationsEnabled?: boolean;
   hovered?: boolean;
+  hoverIntensity?: number;
 }
 
 /**
@@ -25,6 +26,7 @@ export default function SemiconductorCanvas({
   height,
   animationsEnabled = true,
   hovered = false,
+  hoverIntensity = 0,
 }: SemiconductorCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animFrameRef = useRef<number>(0);
@@ -32,6 +34,7 @@ export default function SemiconductorCanvas({
   const timeRef = useRef(0);
   const hoveredRef = useRef(false);
   const animEnabledRef = useRef(animationsEnabled);
+  const hoverIntensityRef = useRef(0);
 
   useEffect(() => {
     hoveredRef.current = hovered;
@@ -40,6 +43,10 @@ export default function SemiconductorCanvas({
   useEffect(() => {
     animEnabledRef.current = animationsEnabled;
   }, [animationsEnabled]);
+
+  useEffect(() => {
+    hoverIntensityRef.current = hoverIntensity ?? 0;
+  }, [hoverIntensity]);
 
   const draw = useCallback(
     (w: number, h: number, t: number, isHover: boolean, animOn: boolean) => {
@@ -171,7 +178,7 @@ export default function SemiconductorCanvas({
           scanGrad.addColorStop(0.5, indigo);
           scanGrad.addColorStop(1, "transparent");
 
-          ctx.globalAlpha = 0.20;
+          ctx.globalAlpha = 0.20 + hoverIntensityRef.current * 0.04;
           ctx.fillStyle = scanGrad;
           ctx.fillRect(scanX - 2, cy - waferR, 4, waferR * 2);
         }
