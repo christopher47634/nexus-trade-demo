@@ -10,11 +10,12 @@ interface OpticalCanvasProps {
 }
 
 /**
- * Canvas 2D visual for 光通信 (Optical Communication)
- * - Dark transparent base (card bg shows through)
- * - 3-5 diagonal lines from top-right to bottom-left
- * - Small dots moving along lines slowly
- * - Gold #c9a84c and cyan #22d3ee, low opacity
+ * Canvas 2D visual for 光通信 (Optical Communication) — REFINED
+ * - 2-3 main fiber lines, 1px, gold #c9a84c, opacity 0.14-0.24
+ * - 1-2 secondary lines, 0.5px, cyan #22d3ee, opacity 0.06-0.12
+ * - 2-3 dots per line, radius 2px, moving slowly (20-30s traversal)
+ * - Hover: speed boost max 1.15x, lines glow 1.15x
+ * - Overall feel: slow data stream, not busy
  */
 export default function OpticalCanvas({
   width,
@@ -27,11 +28,15 @@ export default function OpticalCanvas({
   const isVisibleRef = useRef(true);
   const timeRef = useRef(0);
   const hoveredRef = useRef(false);
+  const animEnabledRef = useRef(animationsEnabled);
 
-  // Keep hover ref in sync
   useEffect(() => {
     hoveredRef.current = hovered;
   }, [hovered]);
+
+  useEffect(() => {
+    animEnabledRef.current = animationsEnabled;
+  }, [animationsEnabled]);
 
   const draw = useCallback(
     (w: number, h: number, t: number, isHover: boolean) => {
@@ -43,72 +48,140 @@ export default function OpticalCanvas({
       try {
         ctx.clearRect(0, 0, w, h);
 
-        // Lines: diagonal from top-right to bottom-left
-        const lines = [
-          { x1: w, y1: 0, x2: 0, y2: h, color: "#c9a84c", opacity: 0.20, lw: 1.5 },
-          { x1: w * 0.9, y1: 0, x2: -w * 0.1, y2: h, color: "#22d3ee", opacity: 0.14, lw: 1.2 },
-          { x1: w * 1.1, y1: h * 0.1, x2: w * 0.1, y2: h * 1.1, color: "#c9a84c", opacity: 0.10, lw: 1 },
-          { x1: w * 0.95, y1: -h * 0.05, x2: -w * 0.05, y2: h * 0.95, color: "#22d3ee", opacity: 0.08, lw: 0.8 },
-          { x1: w * 1.05, y1: h * 0.05, x2: w * 0.05, y2: h * 1.05, color: "#c9a84c", opacity: 0.06, lw: 0.6 },
+        // Main fiber lines: top-right to bottom-left
+        // Traversal: one full pass = 25s → speed = 1/25 = 0.04
+        const mainLines = [
+          {
+            x1: w,
+            y1: 0,
+            x2: 0,
+            y2: h,
+            opacity: 0.20,
+            lw: 1,
+          },
+          {
+            x1: w * 0.92,
+            y1: -h * 0.02,
+            x2: -w * 0.08,
+            y2: h * 0.98,
+            opacity: 0.16,
+            lw: 1,
+          },
+          {
+            x1: w * 1.06,
+            y1: h * 0.06,
+            x2: w * 0.06,
+            y2: h * 1.06,
+            opacity: 0.14,
+            lw: 1,
+          },
         ];
 
-        // Draw lines with dashed style
-        ctx.setLineDash([8, 16]);
-        lines.forEach((line) => {
-          const glowOpacity = isHover ? line.opacity * 1.15 : line.opacity;
+        // Secondary lines: fainter, thinner
+        const secondaryLines = [
+          {
+            x1: w * 0.96,
+            y1: h * 0.03,
+            x2: -w * 0.04,
+            y2: h * 1.03,
+            opacity: 0.10,
+            lw: 0.5,
+          },
+          {
+            x1: w * 1.02,
+            y1: -h * 0.05,
+            x2: w * 0.02,
+            y2: h * 0.95,
+            opacity: 0.06,
+            lw: 0.5,
+          },
+        ];
+
+        const glowMul = isHover ? 1.15 : 1;
+        const speedMul = isHover ? 1.15 : 1;
+
+        // Draw main fiber lines (gold)
+        ctx.setLineDash([]);
+        mainLines.forEach((line) => {
           ctx.beginPath();
           ctx.moveTo(line.x1, line.y1);
           ctx.lineTo(line.x2, line.y2);
-          ctx.strokeStyle = line.color;
-          ctx.globalAlpha = Math.min(glowOpacity, 0.5);
+          ctx.strokeStyle = "#c9a84c";
+          ctx.globalAlpha = Math.min(line.opacity * glowMul, 0.3);
           ctx.lineWidth = line.lw;
           ctx.stroke();
         });
-        ctx.setLineDash([]);
 
-        // Dots traveling along lines
+        // Draw secondary lines (cyan)
+        secondaryLines.forEach((line) => {
+          ctx.beginPath();
+          ctx.moveTo(line.x1, line.y1);
+          ctx.lineTo(line.x2, line.y2);
+          ctx.strokeStyle = "#22d3ee";
+          ctx.globalAlpha = Math.min(line.opacity * glowMul, 0.2);
+          ctx.lineWidth = line.lw;
+          ctx.stroke();
+        });
+
+        // All lines for dot traversal
+        const allLines = [...mainLines, ...secondaryLines];
+
+        // Dots: 2-3 per main line, 1 per secondary = 7-8 total
+        // Traversal period: 25s → speed = 1/25
         const dots = [
-          { delay: 0, speed: 0.029, color: "#c9a84c", size: 3, lineIdx: 0 },
-          { delay: 0.25, speed: 0.023, color: "#22d3ee", size: 2.5, lineIdx: 1 },
-          { delay: 0.5, speed: 0.025, color: "#c9a84c", size: 2, lineIdx: 2 },
-          { delay: 0.15, speed: 0.021, color: "#22d3ee", size: 2, lineIdx: 3 },
-          { delay: 0.35, speed: 0.027, color: "#c9a84c", size: 1.8, lineIdx: 4 },
-          { delay: 0.6, speed: 0.024, color: "#22d3ee", size: 2.2, lineIdx: 0 },
-          { delay: 0.45, speed: 0.020, color: "#c9a84c", size: 2, lineIdx: 1 },
+          // Main line 0: 3 dots
+          { lineIdx: 0, delay: 0.0, color: "#c9a84c", r: 2, period: 25 },
+          { lineIdx: 0, delay: 0.35, color: "#c9a84c", r: 2, period: 28 },
+          { lineIdx: 0, delay: 0.7, color: "#c9a84c", r: 1.8, period: 22 },
+          // Main line 1: 2 dots
+          { lineIdx: 1, delay: 0.15, color: "#c9a84c", r: 2, period: 26 },
+          { lineIdx: 1, delay: 0.55, color: "#c9a84c", r: 1.8, period: 24 },
+          // Main line 2: 2 dots
+          { lineIdx: 2, delay: 0.1, color: "#c9a84c", r: 2, period: 30 },
+          { lineIdx: 2, delay: 0.6, color: "#c9a84c", r: 1.8, period: 27 },
+          // Secondary: 1 dot each
+          { lineIdx: 3, delay: 0.3, color: "#22d3ee", r: 1.5, period: 28 },
+          { lineIdx: 4, delay: 0.5, color: "#22d3ee", r: 1.5, period: 30 },
         ];
 
-        const speedMul = isHover ? 1.15 : 1;
-
         dots.forEach((dot) => {
-          const line = lines[dot.lineIdx];
-          const rawProgress = ((t * dot.speed * speedMul + dot.delay) % 2);
-          const progress = rawProgress <= 1 ? rawProgress : 2 - rawProgress;
+          const line = allLines[dot.lineIdx];
+          const speed = (1 / dot.period) * speedMul;
+          const rawProgress = ((t * speed + dot.delay) % 1);
+          // Bounce: forward then back
+          const progress = rawProgress <= 0.5
+            ? rawProgress * 2
+            : 2 - rawProgress * 2;
 
           const px = line.x1 + (line.x2 - line.x1) * progress;
           const py = line.y1 + (line.y2 - line.y1) * progress;
 
+          // Dot core
           ctx.beginPath();
-          ctx.arc(px, py, dot.size, 0, Math.PI * 2);
+          ctx.arc(px, py, dot.r, 0, Math.PI * 2);
           ctx.fillStyle = dot.color;
-          ctx.globalAlpha = isHover ? 0.32 : 0.22;
+          ctx.globalAlpha = isHover ? 0.28 : 0.18;
           ctx.fill();
 
-          // Glow effect on hover
+          // Subtle glow
           if (isHover) {
             ctx.beginPath();
-            ctx.arc(px, py, dot.size * 2.5, 0, Math.PI * 2);
-            const grad = ctx.createRadialGradient(px, py, dot.size * 0.5, px, py, dot.size * 2.5);
+            ctx.arc(px, py, dot.r * 3, 0, Math.PI * 2);
+            const grad = ctx.createRadialGradient(
+              px, py, dot.r * 0.3,
+              px, py, dot.r * 3
+            );
             grad.addColorStop(0, dot.color);
             grad.addColorStop(1, "transparent");
             ctx.fillStyle = grad;
-            ctx.globalAlpha = 0.15;
+            ctx.globalAlpha = 0.10;
             ctx.fill();
           }
         });
 
         ctx.globalAlpha = 1;
       } catch {
-        // Graceful fallback: canvas draw failure → just don't draw
+        // Graceful fallback
       }
     },
     []
@@ -118,11 +191,9 @@ export default function OpticalCanvas({
     const canvas = canvasRef.current;
     if (!canvas || width <= 0 || height <= 0) return;
 
-    // Check prefers-reduced-motion
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     const reducedMotion = mq.matches;
 
-    // DPR capped at 2
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = width * dpr;
     canvas.height = height * dpr;
@@ -132,13 +203,11 @@ export default function OpticalCanvas({
     const ctx = canvas.getContext("2d");
     if (ctx) ctx.scale(dpr, dpr);
 
-    // If reduced motion or animations disabled, draw single static frame
     if (reducedMotion || !animationsEnabled) {
       draw(width, height, 0, false);
       return;
     }
 
-    // IntersectionObserver: pause when not visible
     const observer = new IntersectionObserver(
       (entries) => {
         isVisibleRef.current = entries[0]?.isIntersecting ?? false;

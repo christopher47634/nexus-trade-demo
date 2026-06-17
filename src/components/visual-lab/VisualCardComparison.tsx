@@ -8,6 +8,13 @@ import SemiconductorCssVisual from "@/components/sector-visuals/css/Semiconducto
 import OpticalCanvas from "@/components/sector-visuals/canvas/OpticalCanvas";
 import ComputeCanvas from "@/components/sector-visuals/canvas/ComputeCanvas";
 import SemiconductorCanvas from "@/components/sector-visuals/canvas/SemiconductorCanvas";
+import NewEnergyCanvas from "@/components/sector-visuals/canvas/NewEnergyCanvas";
+import RoboticsCanvas from "@/components/sector-visuals/canvas/RoboticsCanvas";
+import LowAltitudeCanvas from "@/components/sector-visuals/canvas/LowAltitudeCanvas";
+import BaijiuCanvas from "@/components/sector-visuals/canvas/BaijiuCanvas";
+import MiningCanvas from "@/components/sector-visuals/canvas/MiningCanvas";
+import DefenseCanvas from "@/components/sector-visuals/canvas/DefenseCanvas";
+import PharmaCanvas from "@/components/sector-visuals/canvas/PharmaCanvas";
 
 interface VisualCardComparisonProps {
   sector: Sector;
@@ -63,6 +70,27 @@ function CanvasVisualWrapper({
   );
 }
 
+/**
+ * Fallback CSS gradient for sectors that don't have a dedicated CSS visual.
+ */
+function FallbackGradientVisual({
+  accentColor,
+  animationsEnabled,
+}: {
+  accentColor: string;
+  animationsEnabled: boolean;
+}) {
+  return (
+    <div
+      className="absolute inset-0"
+      style={{
+        background: `radial-gradient(ellipse at 70% 50%, ${accentColor}18 0%, ${accentColor}08 40%, transparent 70%)`,
+        animation: animationsEnabled ? "pulse 6s ease-in-out infinite" : "none",
+      }}
+    />
+  );
+}
+
 export default function VisualCardComparison({
   sector,
   mode,
@@ -74,34 +102,28 @@ export default function VisualCardComparison({
     return (
       <CanvasVisualWrapper onHoverChange={setHovered}>
         {(width, height) => {
+          const props = { width, height, animationsEnabled, hovered };
           switch (sector.visualType) {
             case "optical":
-              return (
-                <OpticalCanvas
-                  width={width}
-                  height={height}
-                  animationsEnabled={animationsEnabled}
-                  hovered={hovered}
-                />
-              );
+              return <OpticalCanvas {...props} />;
             case "compute":
-              return (
-                <ComputeCanvas
-                  width={width}
-                  height={height}
-                  animationsEnabled={animationsEnabled}
-                  hovered={hovered}
-                />
-              );
+              return <ComputeCanvas {...props} />;
             case "semiconductor":
-              return (
-                <SemiconductorCanvas
-                  width={width}
-                  height={height}
-                  animationsEnabled={animationsEnabled}
-                  hovered={hovered}
-                />
-              );
+              return <SemiconductorCanvas {...props} />;
+            case "new-energy":
+              return <NewEnergyCanvas {...props} />;
+            case "robotics":
+              return <RoboticsCanvas {...props} />;
+            case "low-altitude":
+              return <LowAltitudeCanvas {...props} />;
+            case "baijiu":
+              return <BaijiuCanvas {...props} />;
+            case "mining":
+              return <MiningCanvas {...props} />;
+            case "defense":
+              return <DefenseCanvas {...props} />;
+            case "medicine":
+              return <PharmaCanvas {...props} />;
             default:
               return (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -116,7 +138,7 @@ export default function VisualCardComparison({
     );
   }
 
-  // CSS mode
+  // CSS mode — 3 sectors have dedicated CSS visuals, others get a fallback gradient
   switch (sector.visualType) {
     case "optical":
       return (
@@ -140,6 +162,11 @@ export default function VisualCardComparison({
         />
       );
     default:
-      return null;
+      return (
+        <FallbackGradientVisual
+          accentColor={sector.accentColor}
+          animationsEnabled={animationsEnabled}
+        />
+      );
   }
 }

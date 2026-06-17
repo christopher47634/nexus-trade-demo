@@ -10,13 +10,15 @@ interface SemiconductorCanvasProps {
 }
 
 /**
- * Canvas 2D visual for 半导体 (Semiconductor)
- * - Dark transparent base
- * - Concentric circles (3-5) centered on card
- * - Radial etch lines from center outward
- * - Slow rotation (~30s per revolution)
- * - Hover: scan line sweeps across
- * - Indigo #6366f1 + purple #a855f7 + occasional gold #c9a84c
+ * Canvas 2D visual for 半导体 (Semiconductor) — COMPLETE REDO
+ * - Half-circle wafer emerging from right side (not centered)
+ * - Etch grid: fine horizontal + vertical lines creating a die grid
+ * - 2-3 concentric wafer arcs (partial arcs, not full circles)
+ * - Scanning line: slow horizontal sweep across wafer (14s period)
+ * - Die grid cells: some randomly flickering very subtly (0.08→0.15)
+ * - Hover: crosshair appears at wafer center
+ * - Colors: indigo #6366f1 + purple #a855f7 + gold accent #c9a84c
+ * - Feel: precision manufacturing, nano-scale
  */
 export default function SemiconductorCanvas({
   width,
@@ -53,141 +55,201 @@ export default function SemiconductorCanvas({
         const purple = "#a855f7";
         const gold = "#c9a84c";
 
-        const cx = w * 0.59;
+        // Wafer center: right side, so the half-circle emerges from the right edge
+        const cx = w * 0.78;
         const cy = h * 0.5;
-        const maxRadius = Math.min(w, h) * 0.42;
+        const waferR = Math.min(w, h) * 0.46;
 
-        const rotation = animOn ? (t / 30) * Math.PI * 2 : 0;
-
+        // --- Wafer base fill (half circle, clipped) ---
         ctx.save();
-        ctx.translate(cx, cy);
-        ctx.rotate(rotation);
-
-        // Concentric circles
-        const ringCount = 5;
-        for (let i = 0; i < ringCount; i++) {
-          const r = maxRadius * ((i + 1) / ringCount);
-          const ringOpacity = 0.1 + (0.08 * (ringCount - i)) / ringCount;
-          ctx.beginPath();
-          ctx.arc(0, 0, r, 0, Math.PI * 2);
-          ctx.strokeStyle = i % 2 === 0 ? indigo : purple;
-          ctx.globalAlpha = ringOpacity;
-          ctx.lineWidth = 1.5 - i * 0.15;
-          ctx.stroke();
-        }
-
-        // Wafer surface fill — very faint
         ctx.beginPath();
-        ctx.arc(0, 0, maxRadius * 0.97, 0, Math.PI * 2);
+        ctx.rect(0, 0, w, h);
+        ctx.clip();
+
+        // Half-circle wafer fill (very faint)
+        ctx.beginPath();
+        ctx.arc(cx, cy, waferR, -Math.PI / 2, Math.PI / 2, false);
+        ctx.closePath();
         ctx.fillStyle = indigo;
-        ctx.globalAlpha = 0.02;
+        ctx.globalAlpha = 0.018;
         ctx.fill();
 
-        // Radial etch lines (10 lines)
-        const etchCount = 10;
-        ctx.lineWidth = 0.5;
-        for (let i = 0; i < etchCount; i++) {
-          const angle = (i / etchCount) * Math.PI * 2;
-          const innerR = maxRadius * 0.25;
-          const outerR = maxRadius;
-          const x1 = Math.cos(angle) * innerR;
-          const y1 = Math.sin(angle) * innerR;
-          const x2 = Math.cos(angle) * outerR;
-          const y2 = Math.sin(angle) * outerR;
+        // --- Etch grid: fine lines inside wafer area ---
+        const gridSpacing = 16;
+        ctx.globalAlpha = 0.06;
+        ctx.strokeStyle = purple;
+        ctx.lineWidth = 0.3;
 
+        // Vertical etch lines (only inside wafer half-circle)
+        for (let gx = cx - waferR; gx <= cx; gx += gridSpacing) {
+          // Calculate max y extent at this x within the circle
+          const dx = gx - cx;
+          const maxY = Math.sqrt(waferR * waferR - dx * dx);
           ctx.beginPath();
-          ctx.moveTo(x1, y1);
-          ctx.lineTo(x2, y2);
-          ctx.strokeStyle = i % 2 === 0 ? indigo : purple;
-          ctx.globalAlpha = 0.1;
+          ctx.moveTo(gx, cy - maxY);
+          ctx.lineTo(gx, cy + maxY);
           ctx.stroke();
         }
 
-        // Cross lines (horizontal + vertical through center)
-        ctx.globalAlpha = 0.08;
+        // Horizontal etch lines
+        for (let gy = cy - waferR; gy <= cy + waferR; gy += gridSpacing) {
+          ctx.beginPath();
+          ctx.moveTo(cx - waferR, gy);
+          ctx.lineTo(cx, gy);
+          ctx.stroke();
+        }
+
+        // --- Concentric wafer arcs (partial arcs, 3 arcs) ---
+        const arcRadii = [waferR * 0.35, waferR * 0.6, waferR * 0.88];
+        const arcColors = [indigo, purple, indigo];
+        const arcOpacities = [0.16, 0.12, 0.10];
+
+        arcRadii.forEach((r, i) => {
+          ctx.beginPath();
+          ctx.arc(cx, cy, r, -Math.PI * 0.42, Math.PI * 0.42, false);
+          ctx.strokeStyle = arcColors[i];
+          ctx.globalAlpha = arcOpacities[i];
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        });
+
+        // Wafer edge (the straight cut line at center)
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - waferR);
+        ctx.lineTo(cx, cy + waferR);
         ctx.strokeStyle = indigo;
-        ctx.lineWidth = 0.5;
-        ctx.beginPath();
-        ctx.moveTo(0, -maxRadius);
-        ctx.lineTo(0, maxRadius);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(-maxRadius, 0);
-        ctx.lineTo(maxRadius, 0);
+        ctx.globalAlpha = 0.12;
+        ctx.lineWidth = 0.8;
         ctx.stroke();
 
-        // Die grid cells in center area
-        const cellW = 14;
-        const cellH = 18;
-        const cols = 5;
-        const rows = 3;
-        ctx.globalAlpha = 0.07;
-        ctx.strokeStyle = purple;
-        ctx.lineWidth = 0.4;
-        for (let c = -Math.floor(cols / 2); c <= Math.floor(cols / 2); c++) {
-          for (let r = -Math.floor(rows / 2); r <= Math.floor(rows / 2); r++) {
-            const rx = c * 18 - cellW / 2;
-            const ry = r * 22 - cellH / 2;
-            ctx.beginPath();
-            ctx.roundRect(rx, ry, cellW, cellH, 1);
-            ctx.stroke();
+        // --- Die grid cells: subtle rectangles in wafer area ---
+        // Deterministic "random" flicker using seeded positions
+        const dieCells: { col: number; row: number; flickerPhase: number }[] = [];
+        for (let c = 0; c < 6; c++) {
+          for (let r = 0; r < 5; r++) {
+            // Only include cells that fall within the wafer half-circle
+            const cellCx = cx - (c + 0.5) * (gridSpacing + 2);
+            const cellCy = cy - waferR * 0.5 + r * (gridSpacing + 2);
+            const dx = cellCx - cx;
+            const dy = cellCy - cy;
+            if (dx * dx + dy * dy < waferR * waferR * 0.7 && dx <= 0) {
+              // Use deterministic pseudo-random phase
+              const seed = (c * 7 + r * 13) % 17;
+              dieCells.push({ col: c, row: r, flickerPhase: seed * 0.8 });
+            }
           }
         }
 
-        // Center glow
-        const glowRadius = maxRadius * 0.15;
-        const glowAlpha = animOn ? 0.04 + 0.03 * Math.sin(t * 2) : 0.05;
-        const centerGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, glowRadius);
-        centerGrad.addColorStop(0, indigo);
-        centerGrad.addColorStop(1, "transparent");
-        ctx.globalAlpha = glowAlpha;
-        ctx.fillStyle = centerGrad;
-        ctx.beginPath();
-        ctx.arc(0, 0, glowRadius, 0, Math.PI * 2);
-        ctx.fill();
+        const cellW = gridSpacing * 0.7;
+        const cellH = gridSpacing * 0.7;
+        dieCells.forEach((cell) => {
+          const cellCx = cx - (cell.col + 0.5) * (gridSpacing + 2);
+          const cellCy = cy - waferR * 0.5 + cell.row * (gridSpacing + 2);
 
-        // Notch indicator at bottom
-        ctx.globalAlpha = 0.15;
-        ctx.strokeStyle = indigo;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        const notchY = maxRadius * 0.97;
-        ctx.moveTo(-4, notchY - 5);
-        ctx.lineTo(0, notchY);
-        ctx.lineTo(4, notchY - 5);
-        ctx.stroke();
+          // Subtle flicker: opacity oscillates slowly between 0.08 and 0.15
+          const flicker = animOn
+            ? 0.08 + 0.07 * (0.5 + 0.5 * Math.sin(t * 0.4 + cell.flickerPhase))
+            : 0.10;
 
-        // Occasional gold highlight on one ring
-        const goldRingIdx = 2;
-        const goldR = maxRadius * ((goldRingIdx + 1) / ringCount);
-        ctx.beginPath();
-        ctx.arc(0, 0, goldR, 0, Math.PI * 0.15);
-        ctx.strokeStyle = gold;
-        ctx.globalAlpha = 0.2;
-        ctx.lineWidth = 1;
-        ctx.stroke();
+          ctx.globalAlpha = flicker;
+          ctx.strokeStyle = (cell.col + cell.row) % 3 === 0 ? gold : purple;
+          ctx.lineWidth = 0.4;
+          ctx.beginPath();
+          ctx.roundRect(cellCx - cellW / 2, cellCy - cellH / 2, cellW, cellH, 1);
+          ctx.stroke();
+        });
 
-        ctx.restore();
-        ctx.globalAlpha = 1;
+        // --- Scanning line: slow horizontal sweep across wafer (14s period) ---
+        if (animOn) {
+          const scanPeriod = 14;
+          const scanPhase = (t % scanPeriod) / scanPeriod;
+          // Sweep from left edge of wafer to center line
+          const scanX = (cx - waferR) + scanPhase * waferR;
 
-        // Hover: scan line sweeps across
-        if (isHover && animOn) {
-          const scanProgress = (t * 0.5) % 1;
-          const scanY = h * scanProgress;
-
-          const scanGrad = ctx.createLinearGradient(0, scanY - 2, 0, scanY + 2);
+          const scanGrad = ctx.createLinearGradient(scanX - 2, 0, scanX + 2, 0);
           scanGrad.addColorStop(0, "transparent");
           scanGrad.addColorStop(0.5, indigo);
           scanGrad.addColorStop(1, "transparent");
 
-          ctx.globalAlpha = 0.25;
+          ctx.globalAlpha = 0.12;
           ctx.fillStyle = scanGrad;
-          ctx.fillRect(0, scanY - 2, w, 4);
-
-          ctx.globalAlpha = 1;
+          ctx.fillRect(scanX - 2, cy - waferR, 4, waferR * 2);
         }
+
+        // --- Gold accent arc segment ---
+        ctx.beginPath();
+        ctx.arc(cx, cy, waferR * 0.6, -Math.PI * 0.25, -Math.PI * 0.08, false);
+        ctx.strokeStyle = gold;
+        ctx.globalAlpha = 0.18;
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+
+        // --- Flat notch at bottom of wafer ---
+        const notchY = cy + waferR * 0.95;
+        ctx.beginPath();
+        ctx.moveTo(cx - 5, notchY - 4);
+        ctx.lineTo(cx, notchY);
+        ctx.lineTo(cx + 5, notchY - 4);
+        ctx.strokeStyle = indigo;
+        ctx.globalAlpha = 0.14;
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+
+        ctx.restore();
+
+        // --- Hover: crosshair at wafer center ---
+        if (isHover) {
+          const crossSize = 12;
+
+          ctx.globalAlpha = 0.18;
+          ctx.strokeStyle = gold;
+          ctx.lineWidth = 0.5;
+
+          // Horizontal crosshair
+          ctx.beginPath();
+          ctx.moveTo(cx - crossSize, cy);
+          ctx.lineTo(cx + crossSize, cy);
+          ctx.stroke();
+
+          // Vertical crosshair
+          ctx.beginPath();
+          ctx.moveTo(cx, cy - crossSize);
+          ctx.lineTo(cx, cy + crossSize);
+          ctx.stroke();
+
+          // Small circle at center
+          ctx.beginPath();
+          ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+          ctx.stroke();
+
+          // Tick marks at crosshair ends
+          ctx.globalAlpha = 0.12;
+          const tickLen = 3;
+          // Top tick
+          ctx.beginPath();
+          ctx.moveTo(cx - tickLen, cy - crossSize);
+          ctx.lineTo(cx + tickLen, cy - crossSize);
+          ctx.stroke();
+          // Bottom tick
+          ctx.beginPath();
+          ctx.moveTo(cx - tickLen, cy + crossSize);
+          ctx.lineTo(cx + tickLen, cy + crossSize);
+          ctx.stroke();
+          // Left tick
+          ctx.beginPath();
+          ctx.moveTo(cx - crossSize, cy - tickLen);
+          ctx.lineTo(cx - crossSize, cy + tickLen);
+          ctx.stroke();
+          // Right tick
+          ctx.beginPath();
+          ctx.moveTo(cx + crossSize, cy - tickLen);
+          ctx.lineTo(cx + crossSize, cy + tickLen);
+          ctx.stroke();
+        }
+
+        ctx.globalAlpha = 1;
       } catch {
-        // Graceful fallback: canvas draw failure → just don't draw
+        // Graceful fallback
       }
     },
     []
