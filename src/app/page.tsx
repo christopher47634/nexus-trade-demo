@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import DesktopShell from "@/components/layout/DesktopShell";
 import IndexTicker from "@/components/market/IndexTicker";
 import HotSectorGrid from "@/components/market/HotSectorGrid";
@@ -9,10 +10,38 @@ import Watchlist from "@/components/market/Watchlist";
 import MetricCard from "@/components/common/MetricCard";
 import { getTopGainers, getTopByTurnover } from "@/mock/stocks";
 import { Layers } from "lucide-react";
+import {
+  initializeAccount,
+  getAccount,
+} from "@/lib/account-storage";
+import type { AccountSummary } from "@/types/account";
+
+const DEFAULT_ACCOUNT: AccountSummary = {
+  totalAssets: 1_000_000,
+  availableCash: 1_000_000,
+  marketValue: 0,
+  totalPnL: 0,
+  todayPnL: 0,
+  riskLevel: "low",
+  positionRatio: 0,
+  updatedAt: new Date().toISOString(),
+};
 
 export default function DesktopHomePage() {
   const topGainers = getTopGainers(8);
   const topByTurnover = getTopByTurnover(8);
+  const [account, setAccount] = useState<AccountSummary>(DEFAULT_ACCOUNT);
+
+  useEffect(() => {
+    initializeAccount();
+    const stored = getAccount();
+    setAccount(stored);
+  }, []);
+
+  const todayPnlPercent =
+    account.totalAssets > 0 && account.todayPnL !== 0
+      ? (account.todayPnL / (account.totalAssets - account.todayPnL)) * 100
+      : 0;
 
   return (
     <DesktopShell>
@@ -25,28 +54,28 @@ export default function DesktopHomePage() {
         <div className="grid grid-cols-4 gap-3">
           <MetricCard
             label="模拟总资产"
-            value={1256789.56}
+            value={account.totalAssets}
             prefix="¥"
-            change={2.34}
+            change={Number(todayPnlPercent.toFixed(2))}
             delay={0}
           />
           <MetricCard
             label="今日盈亏"
-            value={28956.78}
+            value={account.todayPnL}
             prefix="¥"
             suffix=""
-            change={2.34}
+            change={Number(todayPnlPercent.toFixed(2))}
             delay={1}
           />
           <MetricCard
             label="持仓市值"
-            value={1156789.12}
+            value={account.marketValue}
             prefix="¥"
             delay={2}
           />
           <MetricCard
             label="可用资金"
-            value={99900.44}
+            value={account.availableCash}
             prefix="¥"
             delay={3}
           />
