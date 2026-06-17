@@ -1,101 +1,110 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import DesktopShell from "@/components/layout/DesktopShell";
+import IndexTicker from "@/components/market/IndexTicker";
+import HotSectorGrid from "@/components/market/HotSectorGrid";
+import MarketOverview from "@/components/market/MarketOverview";
+import RankingList from "@/components/market/RankingList";
+import Watchlist from "@/components/market/Watchlist";
+import MetricCard from "@/components/common/MetricCard";
+import { getTopGainers, getTopByTurnover } from "@/mock/stocks";
+import { Layers } from "lucide-react";
+
+export default function DesktopHomePage() {
+  const topGainers = getTopGainers(8);
+  const topByTurnover = getTopByTurnover(8);
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <DesktopShell>
+      {/* Top Index Ticker */}
+      <IndexTicker />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      {/* Main Content */}
+      <div className="p-6 space-y-6">
+        {/* Account & Market Summary Row */}
+        <div className="grid grid-cols-4 gap-3">
+          <MetricCard
+            label="模拟总资产"
+            value={1256789.56}
+            prefix="¥"
+            change={2.34}
+            delay={0}
+          />
+          <MetricCard
+            label="今日盈亏"
+            value={28956.78}
+            prefix="¥"
+            suffix=""
+            change={2.34}
+            delay={1}
+          />
+          <MetricCard
+            label="持仓市值"
+            value={1156789.12}
+            prefix="¥"
+            delay={2}
+          />
+          <MetricCard
+            label="可用资金"
+            value={99900.44}
+            prefix="¥"
+            delay={3}
+          />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+
+        {/* Section Header: Hot Sectors */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Layers size={18} className="text-[var(--accent)]" />
+            <h2 className="text-base font-semibold text-[var(--text-primary)]">
+              热门板块
+            </h2>
+            <span className="text-xs text-[var(--text-muted)]">
+              实时更新
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
+            <div className="w-1.5 h-1.5 rounded-full bg-up pulse-dot" />
+            盘中 · 交易中
+          </div>
+        </div>
+
+        {/* Hot Sector Grid */}
+        <HotSectorGrid />
+
+        {/* Bottom Section: Rankings + Sentiment + Watchlist */}
+        <div className="grid grid-cols-12 gap-4">
+          {/* Market Sentiment */}
+          <div className="col-span-3">
+            <MarketOverview />
+          </div>
+
+          {/* Top Gainers */}
+          <div className="col-span-3">
+            <RankingList
+              title="涨幅榜"
+              stocks={topGainers}
+              valueKey="changePercent"
+              delay={5}
+            />
+          </div>
+
+          {/* Top by Turnover */}
+          <div className="col-span-3">
+            <RankingList
+              title="成交额榜"
+              stocks={topByTurnover}
+              valueKey="turnover"
+              delay={6}
+            />
+          </div>
+
+          {/* Watchlist */}
+          <div className="col-span-3">
+            <Watchlist delay={7} />
+          </div>
+        </div>
+      </div>
+    </DesktopShell>
   );
 }

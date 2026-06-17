@@ -1,0 +1,376 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===== Theme System: CSS Variables ===== */
+:root {
+  /* Theme 1: Eastern Dark Gold (Default) */
+  --bg-primary: #020612;
+  --bg-secondary: #0a1628;
+  --bg-gradient-start: #020612;
+  --bg-gradient-end: #0a1628;
+
+  /* Glass - Enhanced */
+  --glass-bg: linear-gradient(145deg, rgba(255,255,255,0.075), rgba(255,255,255,0.025)), rgba(15, 22, 36, 0.72);
+  --glass-bg-hover: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.04)), rgba(15, 22, 36, 0.78);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-border-hover: rgba(255, 255, 255, 0.22);
+  --glass-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 24px 80px rgba(0,0,0,0.42);
+  --glass-blur: 22px;
+
+  /* Accent */
+  --accent: #D4A574;
+  --accent-glow: rgba(212, 165, 116, 0.3);
+  --accent-soft: rgba(212, 165, 116, 0.15);
+
+  /* Data colors */
+  --up: #34D399;
+  --up-bg: rgba(52, 211, 153, 0.12);
+  --down: #F87171;
+  --down-bg: rgba(248, 113, 113, 0.12);
+  --neutral: #94A3B8;
+
+  /* Text */
+  --text-primary: #E2E8F0;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --text-accent: #D4A574;
+
+  /* Surface layers */
+  --surface-0: #020612;
+  --surface-1: rgba(255, 255, 255, 0.03);
+  --surface-2: rgba(255, 255, 255, 0.06);
+  --surface-3: rgba(255, 255, 255, 0.09);
+
+  /* Border */
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-default: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.2);
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+
+  /* Shadows */
+  --shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 24px 80px rgba(0, 0, 0, 0.35);
+
+  /* Mouse position for glow effect */
+  --mouse-x: 50%;
+  --mouse-y: 50%;
+
+  /* Sidebar width */
+  --sidebar-width: 64px;
+}
+
+/* Theme 2: Cyber Blue (placeholder) */
+[data-theme="cyber"] {
+  --bg-primary: #0a0a1a;
+  --bg-secondary: #0f0f2a;
+  --accent: #6366f1;
+  --accent-glow: rgba(99, 102, 241, 0.3);
+  --accent-soft: rgba(99, 102, 241, 0.15);
+  --text-accent: #a78bfa;
+}
+
+/* Theme 3: Institutional Black Gold (placeholder) */
+[data-theme="institutional"] {
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #111111;
+  --accent: #d4a574;
+  --accent-glow: rgba(212, 165, 116, 0.3);
+  --accent-soft: rgba(212, 165, 116, 0.15);
+  --text-accent: #d4a574;
+}
+
+/* Theme 4: Ice Glass (placeholder) */
+[data-theme="ice"] {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #f1f5f9;
+  --glass-bg: linear-gradient(145deg, rgba(255,255,255,0.6), rgba(255,255,255,0.4)), rgba(240, 244, 252, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.8);
+  --accent: #7c3aed;
+  --accent-glow: rgba(124, 58, 237, 0.2);
+  --accent-soft: rgba(124, 58, 237, 0.1);
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --up: #059669;
+  --down: #dc2626;
+}
+
+/* ===== Base Styles ===== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
+    'Helvetica Neue', 'PingFang SC', 'Noto Sans SC', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ===== Global Background - Enhanced Eastern Dark Gold ===== */
+.global-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  background:
+    radial-gradient(ellipse 800px 600px at 20% 20%, rgba(212,165,116,0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 600px 800px at 80% 80%, rgba(212,165,116,0.03) 0%, transparent 70%),
+    radial-gradient(ellipse 80% 60% at 50% -20%, rgba(212, 165, 116, 0.06), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 60%, rgba(52, 211, 153, 0.03), transparent),
+    radial-gradient(ellipse 50% 50% at 20% 80%, rgba(99, 102, 241, 0.03), transparent),
+    linear-gradient(180deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+  pointer-events: none;
+}
+
+/* Subtle grid overlay */
+.global-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 60px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 60px);
+  mask-image: radial-gradient(ellipse 70% 50% at 50% 50%, black, transparent);
+}
+
+/* ===== Glass Card Base - Enhanced Glassmorphism ===== */
+.glass {
+  background:
+    linear-gradient(145deg, rgba(255,255,255,0.075), rgba(255,255,255,0.025)),
+    rgba(15, 22, 36, 0.72);
+  backdrop-filter: blur(22px) saturate(140%);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 24px 80px rgba(0,0,0,0.42);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass:hover {
+  border-color: rgba(255,255,255,0.22);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.12),
+    0 24px 80px rgba(0,0,0,0.5);
+}
+
+/* ===== Glow Effect on Cards ===== */
+.glow-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.glow-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    600px circle at var(--mouse-x) var(--mouse-y),
+    var(--accent-glow),
+    transparent 40%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.glow-card:hover::before {
+  opacity: 1;
+}
+
+/* ===== Number Font ===== */
+.font-mono-nums {
+  font-feature-settings: 'tnum' on, 'lnum' on;
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -0.02em;
+}
+
+/* ===== Price Colors ===== */
+.text-up { color: var(--up); }
+.text-down { color: var(--down); }
+.bg-up { background: var(--up-bg); }
+.bg-down { background: var(--down-bg); }
+
+/* ===== Shimmer Animation ===== */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer-border {
+  position: relative;
+}
+
+.shimmer-border::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--accent-glow) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: xor;
+  -webkit-mask-composite: xor;
+  padding: 1px;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.shimmer-border:hover::after {
+  opacity: 1;
+}
+
+/* ===== Pulse Dot ===== */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.5); }
+}
+
+.pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* ===== Sector Card Gradient Overlay ===== */
+.sector-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--sector-color, rgba(212, 165, 116, 0.15)) 0%,
+    transparent 60%
+  );
+}
+
+/* ===== Hide scrollbar but keep scrolling ===== */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ===== Horizontal Scroll Snap (Mobile) ===== */
+.scroll-snap-x {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.scroll-snap-x > * {
+  scroll-snap-align: start;
+}
+.fade-mask-right {
+  mask-image: linear-gradient(to right, black 65%, rgba(0,0,0,0.4) 85%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black 65%, rgba(0,0,0,0.4) 85%, transparent 100%);
+}
+
+/* ===== Ticker tape ===== */
+@keyframes ticker-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.ticker-scroll {
+  animation: ticker-scroll 30s linear infinite;
+}
+
+/* ===== Skeleton loading ===== */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+
+.skeleton {
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+/* ===== Sector Pattern Backgrounds ===== */
+.sector-pattern {
+  position: absolute;
+  inset: 0;
+  opacity: 1;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.sector-pattern-hover {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.group:hover .sector-pattern-hover {
+  opacity: 1;
+}
+
+/* ===== Mobile Bottom Tab Safe Area ===== */
+.safe-area-bottom {
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+}
+
+/* ===== Gold Accent Glow Utilities ===== */
+.gold-glow {
+  box-shadow: 0 0 20px rgba(212, 165, 116, 0.15);
+}
+
+.gold-text-shadow {
+  text-shadow: 0 0 12px rgba(212, 165, 116, 0.3);
+}
+
+/* ===== Top Rank Enhancement ===== */
+.rank-1-glow {
+  box-shadow:
+    inset 0 1px 0 rgba(212,165,116,0.15),
+    0 0 30px rgba(212,165,116,0.08),
+    0 24px 80px rgba(0,0,0,0.42);
+  border-color: rgba(212,165,116,0.2);
+}
