@@ -186,6 +186,7 @@ export default function SectorDetailPage() {
               </motion.div>
               <div>
                 <motion.h1
+                  layoutId={`sector-name-${sectorId}`}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.15 }}
@@ -206,6 +207,7 @@ export default function SectorDetailPage() {
 
             <div className="text-right">
               <motion.div
+                layoutId={`sector-change-${sectorId}`}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.2 }}
