@@ -14,35 +14,13 @@ import {
   Flame,
   ArrowUpDown,
 } from "lucide-react";
-import {
-  Zap,
-  Cpu,
-  MemoryStick,
-  Mountain,
-  Sun,
-  Bot,
-  Plane,
-  Shield,
-  HeartPulse,
-  Wine,
-} from "lucide-react";
+import { sectorIconMap, SectorFallback } from "@/components/icons/SectorIcons";
 import SectorHeroArtwork from "@/components/sector/SectorHeroArtwork";
 import MobileCanvasWrapper from "@/components/sector-visuals/MobileCanvasWrapper";
 import HeroKpiCard from "@/components/sector/HeroKpiCard";
 import ErrorState from "@/components/common/ErrorState";
 
-const iconMap: Record<string, React.ElementType> = {
-  Zap,
-  Cpu,
-  MemoryStick,
-  Mountain,
-  Sun,
-  Bot,
-  Plane,
-  Shield,
-  HeartPulse,
-  Wine,
-};
+const iconMap = sectorIconMap;
 
 type SortKey = "turnover" | "changePercent" | "price" | "turnoverRate";
 
@@ -96,7 +74,7 @@ export default function MobileSectorDetailPage() {
     );
   }
 
-  const Icon = iconMap[sector.icon] || Zap;
+  const Icon = iconMap[sector.icon] || SectorFallback;
   const isUp = sector.changePercent >= 0;
 
   return (

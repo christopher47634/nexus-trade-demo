@@ -5,39 +5,19 @@ import { useRouter } from "next/navigation";
 import { sectors } from "@/mock/sectors";
 import { cn, formatPercent } from "@/lib/utils";
 import {
-  Zap,
-  Cpu,
-  MemoryStick,
-  Mountain,
-  Sun,
-  Bot,
-  Plane,
-  Shield,
-  HeartPulse,
-  Wine,
   TrendingUp,
   TrendingDown,
   Flame,
   Crown,
 } from "lucide-react";
+import { sectorIconMap, SectorFallback } from "@/components/icons/SectorIcons";
 import { useRef, useState, useEffect } from "react";
 import SectorVisualBackground from "@/components/sector/SectorVisualBackground";
 import HoverGlow from "@/components/sector-visuals/HoverGlow";
 import { isCanvasVisualsEnabled } from "@/lib/feature-flags";
 import { getSectorCanvas } from "@/components/sector-visuals/getSectorCanvas";
 
-const iconMap: Record<string, React.ElementType> = {
-  Zap,
-  Cpu,
-  MemoryStick,
-  Mountain,
-  Sun,
-  Bot,
-  Plane,
-  Shield,
-  HeartPulse,
-  Wine,
-};
+const iconMap = sectorIconMap;
 
 function MiniSparkline({ color }: { color: string }) {
   // Generate a random sparkline path
@@ -120,7 +100,7 @@ export default function HotSectorGrid() {
   return (
     <div className="grid grid-cols-5 gap-3" id="sectors">
       {sortedSectors.map((sector, i) => {
-        const Icon = iconMap[sector.icon] || Zap;
+        const Icon = iconMap[sector.icon] || SectorFallback;
         const isUp = sector.changePercent >= 0;
         const isTop3 = i < 3;
         const isRank1 = i === 0;
@@ -156,13 +136,13 @@ export default function HotSectorGrid() {
               backdropFilter: "blur(22px) saturate(140%)",
               WebkitBackdropFilter: "blur(22px) saturate(140%)",
               border: isRank1
-                ? "1px solid rgba(212,165,116,0.28)"
+                ? "1px solid rgba(212,165,116,0.20)"
                 : isTop3
-                  ? "1px solid rgba(198,166,112,0.22)"
-                  : "1px solid rgba(148,163,184,0.18)",
+                  ? "1px solid rgba(198,166,112,0.14)"
+                  : "1px solid rgba(255,255,255,0.08)",
               boxShadow: isRank1
-                ? "inset 0 1px 0 rgba(255,255,255,0.045), 0 0 30px rgba(212,165,116,0.06), 0 10px 28px rgba(0,0,0,0.22)"
-                : "inset 0 1px 0 rgba(255,255,255,0.045), 0 10px 28px rgba(0,0,0,0.22)",
+                ? "inset 0 1px 0 rgba(255,255,255,0.04), 0 0 30px rgba(212,165,116,0.08), 0 0 20px rgba(0,0,0,0.3)"
+                : "inset 0 1px 0 rgba(255,255,255,0.04), 0 0 20px rgba(0,0,0,0.3)",
             }}
           >
             {/* SectorVisualBackground — P1H-cardfix-2: full-card industry watermark */}
@@ -238,22 +218,38 @@ export default function HotSectorGrid() {
                     style={{ color: sector.accentColor }}
                   />
                 </div>
-                <div className="flex items-center gap-1">
+                {/* Micro status chip — dark glass bg */}
+                <div
+                  className="flex items-center gap-1 transition-all duration-200"
+                  style={{
+                    height: "21px",
+                    padding: "3px 8px",
+                    borderRadius: "6px",
+                    background: "rgba(8,12,24,0.45)",
+                    backdropFilter: "blur(11px)",
+                    WebkitBackdropFilter: "blur(11px)",
+                    border: "1px solid rgba(255,255,255,0.13)",
+                    boxShadow: "0 0 10px rgba(255,190,90,0.08)",
+                  }}
+                >
                   {isRank1 ? (
-                    <Crown size={11} className="text-[var(--accent)]" />
+                    <Crown size={10} className="text-[var(--accent)]" />
                   ) : (
                     <Flame
-                      size={10}
-                      className="text-[var(--accent)] opacity-70"
+                      size={9}
+                      className="text-[var(--accent)] opacity-60"
                     />
                   )}
                   <span
-                    className={cn(
-                      "font-mono-nums",
-                      isTop3
-                        ? "text-[11px] text-[var(--accent)] font-semibold"
-                        : "text-[10px] text-[var(--text-muted)]"
-                    )}
+                    className="font-mono-nums"
+                    style={{
+                      fontSize: "10.5px",
+                      fontWeight: isTop3 ? 600 : 500,
+                      color: isTop3
+                        ? "var(--accent)"
+                        : "rgba(255,255,255,0.70)",
+                      lineHeight: 1,
+                    }}
                   >
                     #{sector.hotRank}
                   </span>
@@ -263,10 +259,11 @@ export default function HotSectorGrid() {
               {/* Name — shared layout transition with detail page */}
               <motion.h3
                 layoutId={`sector-name-${sector.id}`}
-                className={cn(
-                  "font-semibold text-[var(--text-primary)] mb-1",
-                  isTop3 ? "text-base" : "text-sm"
-                )}
+                className="font-semibold mb-1"
+                style={{
+                  fontSize: isTop3 ? "15px" : "14px",
+                  color: "rgba(255,255,255,0.92)",
+                }}
               >
                 {sector.name}
               </motion.h3>
@@ -282,9 +279,11 @@ export default function HotSectorGrid() {
                   layoutId={`sector-change-${sector.id}`}
                   className={cn(
                     "font-bold font-mono-nums",
-                    isTop3 ? "text-xl" : "text-lg",
                     isUp ? "text-up" : "text-down"
                   )}
+                  style={{
+                    fontSize: isTop3 ? "14px" : "13px",
+                  }}
                 >
                   {formatPercent(sector.changePercent)}
                 </motion.span>
@@ -294,26 +293,45 @@ export default function HotSectorGrid() {
               <MiniSparkline color={isUp ? "var(--up)" : "var(--down)"} />
 
               {/* Stats */}
-              <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-[var(--border-subtle)]">
+              <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-[rgba(255,255,255,0.06)]">
                 <div>
-                  <span className="text-[9px] text-[var(--text-muted)] block">
+                  <span
+                    style={{
+                      fontSize: "10.5px",
+                      color: "rgba(255,255,255,0.40)",
+                      display: "block",
+                    }}
+                  >
                     成交额
                   </span>
-                  <span className="text-xs text-[var(--text-secondary)] font-mono-nums">
+                  <span
+                    className="font-mono-nums"
+                    style={{
+                      fontSize: "12px",
+                      color: "rgba(255,255,255,0.50)",
+                    }}
+                  >
                     {sector.turnover}
                   </span>
                 </div>
                 <div className="text-right">
-                  <span className="text-[9px] text-[var(--text-muted)] block">
+                  <span
+                    style={{
+                      fontSize: "10.5px",
+                      color: "rgba(255,255,255,0.40)",
+                      display: "block",
+                    }}
+                  >
                     资金流
                   </span>
                   <span
                     className={cn(
-                      "text-xs font-mono-nums",
+                      "font-mono-nums",
                       sector.capitalInflow.startsWith("+")
                         ? "text-up"
                         : "text-down"
                     )}
+                    style={{ fontSize: "12px" }}
                   >
                     {sector.capitalInflow}
                   </span>

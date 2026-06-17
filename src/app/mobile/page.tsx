@@ -7,33 +7,11 @@ import { marketIndices, marketStats } from "@/mock/market";
 import { sectors } from "@/mock/sectors";
 import { getTopGainers } from "@/mock/stocks";
 import { ArrowUpRight, ArrowDownRight, Eye, ChevronRight } from "lucide-react";
-import {
-  Zap,
-  Cpu,
-  MemoryStick,
-  Mountain,
-  Sun,
-  Bot,
-  Plane,
-  Shield,
-  HeartPulse,
-  Wine,
-} from "lucide-react";
+import { sectorIconMap, SectorFallback } from "@/components/icons/SectorIcons";
 import SectorVisualBackground from "@/components/sector/SectorVisualBackground";
 import MobileCanvasWrapper from "@/components/sector-visuals/MobileCanvasWrapper";
 
-const iconMap: Record<string, React.ElementType> = {
-  Zap,
-  Cpu,
-  MemoryStick,
-  Mountain,
-  Sun,
-  Bot,
-  Plane,
-  Shield,
-  HeartPulse,
-  Wine,
-};
+const iconMap = sectorIconMap;
 
 function AssetCard() {
   return (
@@ -177,7 +155,7 @@ function SectorCards() {
       </div>
       <div className="flex gap-3 overflow-x-auto no-scrollbar scroll-snap-x fade-mask-right pb-1">
         {sortedSectors.map((sector, i) => {
-          const Icon = iconMap[sector.icon] || Zap;
+          const Icon = iconMap[sector.icon] || SectorFallback;
           const isUp = sector.changePercent >= 0;
           return (
             <motion.div
