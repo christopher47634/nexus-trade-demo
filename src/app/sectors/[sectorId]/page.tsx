@@ -231,7 +231,12 @@ export default function SectorDetailPage() {
               value={sector.capitalInflow}
               tone={sector.capitalInflow.startsWith("+") ? "positive" : "negative"}
             />
-            <HeroKpiCard label="成分股数" value={`${getStocksBySector(sectorId).length}`} tone="neutral" />
+            <HeroKpiCard
+              label="涨跌家数"
+              value={`${sectorStocks.filter(s => s.changePercent >= 0).length}↑ ${sectorStocks.filter(s => s.changePercent < 0).length}↓`}
+              tone={sectorStocks.filter(s => s.changePercent >= 0).length > sectorStocks.filter(s => s.changePercent < 0).length ? "positive" : "negative"}
+            />
+            <HeroKpiCard label="成分股数" value={`${sectorStocks.length}`} tone="neutral" />
           </motion.div>
         </motion.div>
 

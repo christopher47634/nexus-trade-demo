@@ -451,6 +451,18 @@ function OpticalHero({ color }: { color: string }) {
     { cx: 835, cy: 68, r: 0.9, intensity: 0.22 },
     { cx: 545, cy: 315, r: 1, intensity: 0.25 },
     { cx: 670, cy: 225, r: 0.8, intensity: 0.2 },
+    { cx: 575, cy: 292, r: 1.1, intensity: 0.32 },
+    { cx: 610, cy: 268, r: 0.9, intensity: 0.26 },
+    { cx: 640, cy: 248, r: 1.2, intensity: 0.34 },
+    { cx: 700, cy: 195, r: 1, intensity: 0.28 },
+    { cx: 720, cy: 178, r: 1.3, intensity: 0.36 },
+    { cx: 740, cy: 158, r: 0.8, intensity: 0.22 },
+    { cx: 760, cy: 135, r: 1.1, intensity: 0.3 },
+    { cx: 790, cy: 108, r: 0.9, intensity: 0.24 },
+    { cx: 810, cy: 88, r: 1.2, intensity: 0.32 },
+    { cx: 830, cy: 72, r: 0.7, intensity: 0.18 },
+    { cx: 555, cy: 310, r: 0.8, intensity: 0.2 },
+    { cx: 695, cy: 200, r: 1.1, intensity: 0.3 },
   ];
 
   let gradIdx = 0;
@@ -525,9 +537,9 @@ function OpticalHero({ color }: { color: string }) {
                 { offset: "100%", color: color, opacity: 1 },
               ]}
               strokeWidth={0.9 + i * 0.05}
-              opacity={0.7}
+              opacity={0.82}
               glowLevel="small"
-              glowOpacity={0.08}
+              glowOpacity={0.1}
               direction={{ x1: "0%", y1: "100%", x2: "100%", y2: "0%" }}
             />
           ))}
@@ -547,10 +559,10 @@ function OpticalHero({ color }: { color: string }) {
               { offset: "100%", color: warmWhite, opacity: 0.9 },
             ]}
             strokeWidth={1.1}
-            opacity={0.85}
+            opacity={0.95}
             glowLevel="medium"
-            glowOpacity={0.1}
-            glowStrokeWidth={4}
+            glowOpacity={0.13}
+            glowStrokeWidth={5}
             direction={{ x1: "0%", y1: "100%", x2: "100%", y2: "0%" }}
           />
         ))}

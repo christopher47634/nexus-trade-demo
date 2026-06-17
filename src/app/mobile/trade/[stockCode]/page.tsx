@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import MobileShell from "@/components/layout/MobileShell";
 import { getStockByCode } from "@/mock/stocks";
+import { createOrder, updateOrderStatus, type MockOrder } from "@/mock/orders";
 import { cn, formatPercent } from "@/lib/utils";
 import {
   ArrowLeft,
@@ -31,10 +32,11 @@ export default function MobileTradePage() {
   const [price, setPrice] = useState(stock?.price.toFixed(2) || "0.00");
   const [quantity, setQuantity] = useState(100);
   const [step, setStep] = useState<OrderStep>("input");
+  const orderRef = useRef<MockOrder | null>(null);
 
   if (!stock) {
     return (
-      <MobileShell>
+      <MobileShell hideTabs>
         <div className="flex items-center justify-center h-screen">
           <span className="text-[var(--text-muted)]">股票未找到</span>
         </div>
@@ -48,14 +50,28 @@ export default function MobileTradePage() {
   const maxBuy = Math.floor(AVAILABLE_FUNDS / priceNum / 100) * 100;
 
   const handleSubmit = () => {
+    const order = createOrder({
+      stockCode: stock.code,
+      stockName: stock.name,
+      side,
+      price: priceNum,
+      quantity,
+    });
+    orderRef.current = order;
     setStep("submitted");
-    setTimeout(() => setStep("matching"), 1200);
-    setTimeout(() => setStep("filled"), 3000);
+    setTimeout(() => {
+      setStep("matching");
+      updateOrderStatus(order.id, "matching");
+    }, 1200);
+    setTimeout(() => {
+      setStep("filled");
+      updateOrderStatus(order.id, "filled");
+    }, 3000);
   };
 
   return (
-    <MobileShell>
-      <div className="px-4 pt-2 pb-24">
+    <MobileShell hideTabs>
+      <div className="px-4 pt-2" style={{ paddingBottom: "calc(16px + env(safe-area-inset-bottom, 0px))" }}>
         {/* Back button */}
         <motion.button
           initial={{ opacity: 0, x: -10 }}
@@ -117,21 +133,31 @@ export default function MobileTradePage() {
                   className={cn(
                     "flex-1 py-3 rounded-xl text-sm font-semibold transition-all duration-200",
                     side === "buy"
-                      ? "bg-[var(--up)] text-[var(--bg-primary)]"
-                      : "bg-[var(--up-bg)] text-[var(--up)] border border-[var(--up)]"
+                       ? "text-[var(--bg-primary)]"
+                       : "border"
                   )}
-                >
+                   style={
+                     side === "buy"
+                       ? { background: "#2AB882", boxShadow: "0 0 16px rgba(42,184,130,0.2)" }
+                       : { background: "rgba(42,184,130,0.08)", color: "#2AB882", borderColor: "rgba(42,184,130,0.3)" }
+                   }
+                 >
                   买入
                 </button>
                 <button
                   onClick={() => setSide("sell")}
                   className={cn(
                     "flex-1 py-3 rounded-xl text-sm font-semibold transition-all duration-200",
-                    side === "sell"
-                      ? "bg-[var(--down)] text-white"
-                      : "bg-[var(--down-bg)] text-[var(--down)] border border-[var(--down)]"
-                  )}
-                >
+                     side === "sell"
+                       ? "text-white"
+                       : "border"
+                   )}
+                    style={
+                      side === "sell"
+                        ? { background: "#D46A5E", boxShadow: "0 0 16px rgba(212,106,94,0.2)" }
+                        : { background: "rgba(212,106,94,0.08)", color: "#D46A5E", borderColor: "rgba(212,106,94,0.3)" }
+                    }
+                 >
                   卖出
                 </button>
               </div>
@@ -237,16 +263,15 @@ export default function MobileTradePage() {
                 disabled={quantity <= 0 || priceNum <= 0}
                 className={cn(
                   "w-full py-4 rounded-2xl text-base font-semibold transition-all",
-                  side === "buy"
-                    ? "bg-[var(--up)] text-[var(--bg-primary)]"
-                    : "bg-[var(--down)] text-white",
+                   side === "buy" ? "text-[var(--bg-primary)]" : "text-white",
                   "disabled:opacity-50 disabled:cursor-not-allowed"
                 )}
                 style={{
-                  boxShadow:
-                    side === "buy"
-                      ? "0 0 24px rgba(52,211,153,0.2)"
-                      : "0 0 24px rgba(248,113,113,0.2)",
+                   background: side === "buy" ? "#2AB882" : "#D46A5E",
+                   boxShadow:
+                     side === "buy"
+                       ? "0 0 24px rgba(42,184,130,0.25)"
+                       : "0 0 24px rgba(212,106,94,0.25)",
                 }}
               >
                 {side === "buy" ? "确认买入" : "确认卖出"}
@@ -278,6 +303,11 @@ export default function MobileTradePage() {
                 <div className="text-xs text-[var(--text-secondary)] font-mono-nums mt-1">
                   总金额 ¥{totalAmount.toLocaleString("zh-CN", { minimumFractionDigits: 2 })}
                 </div>
+                {orderRef.current && (
+                  <div className="text-[10px] text-[var(--text-muted)] font-mono-nums mt-1">
+                    订单号: {orderRef.current.id}
+                  </div>
+                )}
               </div>
 
               {/* Three steps */}
@@ -322,7 +352,10 @@ export default function MobileTradePage() {
                   className="flex gap-3"
                 >
                   <button
-                    onClick={() => setStep("input")}
+                    onClick={() => {
+                      setStep("input");
+                      orderRef.current = null;
+                    }}
                     className="flex-1 py-3 rounded-2xl text-sm font-medium bg-[var(--surface-2)] text-[var(--text-secondary)]"
                   >
                     继续下单

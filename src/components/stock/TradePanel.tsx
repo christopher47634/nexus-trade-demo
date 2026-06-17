@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Stock } from "@/mock/stocks";
+import { createOrder, updateOrderStatus, type MockOrder } from "@/mock/orders";
 import { X, Minus, Plus, Check, Loader2 } from "lucide-react";
 
 type TradeSide = "buy" | "sell";
@@ -27,14 +28,31 @@ export default function TradePanel({ stock, side: initialSide = "buy", onClose }
   const totalAmount = priceNum * quantity;
   const maxBuy = Math.floor(AVAILABLE_FUNDS / priceNum / 100) * 100;
 
+  const orderRef = useRef<MockOrder | null>(null);
+
   const handleSubmit = () => {
+    const order = createOrder({
+      stockCode: stock.code,
+      stockName: stock.name,
+      side,
+      price: priceNum,
+      quantity,
+    });
+    orderRef.current = order;
     setStep("submitted");
-    setTimeout(() => setStep("matching"), 1200);
-    setTimeout(() => setStep("filled"), 3000);
+    setTimeout(() => {
+      setStep("matching");
+      updateOrderStatus(order.id, "matching");
+    }, 1200);
+    setTimeout(() => {
+      setStep("filled");
+      updateOrderStatus(order.id, "filled");
+    }, 3000);
   };
 
   const handleReset = () => {
     setStep("input");
+    orderRef.current = null;
   };
 
   return (
@@ -71,7 +89,7 @@ export default function TradePanel({ stock, side: initialSide = "buy", onClose }
               "inset 0 1px 0 rgba(255,255,255,0.08), 0 24px 80px rgba(0,0,0,0.6)",
           }}
         >
-          {/* Header */}
+          {/* Header + Simulated badge */}
           <div className="flex items-center justify-between p-4 border-b border-[var(--border-subtle)]">
             <div>
               <span className="text-sm font-semibold text-[var(--text-primary)]">
@@ -81,12 +99,24 @@ export default function TradePanel({ stock, side: initialSide = "buy", onClose }
                 {stock.code}
               </span>
             </div>
-            <button
-              onClick={onClose}
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-2)] transition-colors"
-            >
-              <X size={16} />
-            </button>
+            <div className="flex items-center gap-2">
+              <span
+                className="text-[10px] px-2 py-0.5 rounded-full font-medium"
+                style={{
+                  background: "rgba(212,165,116,0.12)",
+                  color: "var(--accent)",
+                  border: "1px solid rgba(212,165,116,0.25)",
+                }}
+              >
+                模拟交易
+              </span>
+              <button
+                onClick={onClose}
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-2)] transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </div>
           </div>
 
           {/* Content area with AnimatePresence for steps */}
@@ -236,6 +266,34 @@ export default function TradePanel({ stock, side: initialSide = "buy", onClose }
                   </div>
                 </div>
 
+                {/* Order preview summary */}
+                <div
+                  className="p-3 rounded-xl space-y-1.5"
+                  style={{
+                    background: "rgba(255,255,255,0.02)",
+                    border: "1px solid rgba(255,255,255,0.05)",
+                  }}
+                >
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[var(--text-muted)]">方向</span>
+                    <span className={cn("font-medium", side === "buy" ? "text-up" : "text-down")}>
+                      {side === "buy" ? "买入" : "卖出"} {stock.name}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[var(--text-muted)]">委托</span>
+                    <span className="text-[var(--text-secondary)] font-mono-nums">
+                      {priceNum.toFixed(2)}元 × {quantity}股
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[var(--text-muted)]">预计金额</span>
+                    <span className="text-[var(--text-primary)] font-semibold font-mono-nums">
+                      ¥{totalAmount.toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                </div>
+
                 {/* Submit button */}
                 <motion.button
                   whileHover={{ scale: 1.01 }}
@@ -252,6 +310,11 @@ export default function TradePanel({ stock, side: initialSide = "buy", onClose }
                 >
                   {side === "buy" ? "确认买入" : "确认卖出"}
                 </motion.button>
+
+                {/* Risk disclaimer */}
+                <p className="text-[10px] text-[var(--text-muted)] text-center leading-relaxed opacity-60">
+                  当前为模拟成交，不构成真实交易建议。投资有风险，入市需谨慎。
+                </p>
               </motion.div>
             )}
 
@@ -276,10 +339,28 @@ export default function TradePanel({ stock, side: initialSide = "buy", onClose }
                   <div className="text-xs text-[var(--text-secondary)] font-mono-nums">
                     总金额 ¥{totalAmount.toLocaleString("zh-CN", { minimumFractionDigits: 2 })}
                   </div>
+                  {orderRef.current && (
+                    <div className="text-[10px] text-[var(--text-muted)] font-mono-nums mt-1">
+                      订单号: {orderRef.current.id}
+                    </div>
+                  )}
                 </div>
 
-                {/* Three-step progress */}
-                <div className="space-y-4">
+                {/* Three-step progress timeline */}
+                <div className="relative">
+                  {/* Vertical connecting line */}
+                  <div
+                    className="absolute left-[15px] top-[20px] w-[2px] rounded-full"
+                    style={{
+                      height: "calc(100% - 40px)",
+                      background: step === "filled"
+                        ? "var(--accent)"
+                        : step === "matching"
+                        ? "linear-gradient(180deg, var(--up), var(--accent-soft))"
+                        : "var(--surface-2)",
+                    }}
+                  />
+                  <div className="space-y-4 relative z-10">
                   {/* Step 1: Submitted */}
                   <StatusStep
                     label="订单已提交"
@@ -318,10 +399,44 @@ export default function TradePanel({ stock, side: initialSide = "buy", onClose }
                     delay={0.3}
                     highlight
                   />
+                  </div>
                 </div>
 
                 {/* Done button */}
                 {step === "filled" && (
+                  <div className="space-y-3">
+                  {/* Filled details */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15 }}
+                    className="p-4 rounded-xl space-y-2"
+                    style={{
+                      background: "rgba(52,211,153,0.05)",
+                      border: "1px solid rgba(52,211,153,0.12)",
+                    }}
+                  >
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-[var(--text-muted)]">成交价格</span>
+                      <span className="text-[var(--text-primary)] font-mono-nums font-semibold">{priceNum.toFixed(2)}元</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-[var(--text-muted)]">成交数量</span>
+                      <span className="text-[var(--text-primary)] font-mono-nums">{quantity}股</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-[var(--text-muted)]">成交金额</span>
+                      <span className="text-[var(--text-primary)] font-mono-nums font-semibold">
+                        ¥{totalAmount.toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                    {orderRef.current && (
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-[var(--text-muted)]">订单号</span>
+                        <span className="text-[var(--text-secondary)] font-mono-nums text-[10px]">{orderRef.current.id}</span>
+                      </div>
+                    )}
+                  </motion.div>
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -341,6 +456,7 @@ export default function TradePanel({ stock, side: initialSide = "buy", onClose }
                       关闭
                     </button>
                   </motion.div>
+                  </div>
                 )}
               </motion.div>
             )}

@@ -94,7 +94,7 @@ export default function MobileSectorDetailPage() {
   const isUp = sector.changePercent >= 0;
 
   return (
-    <MobileShell>
+    <MobileShell activeTab={1}>
       {/* Hero area - ~30% of viewport */}
       <motion.div
         layoutId={`sector-card-${sector.id}`}
@@ -178,7 +178,7 @@ export default function MobileSectorDetailPage() {
           </div>
 
           {/* Horizontal scroll stat cards */}
-          <div className="flex gap-2.5 overflow-x-auto no-scrollbar fade-mask-right pb-1">
+          <div className="flex gap-2.5 overflow-x-auto no-scrollbar fade-mask-right scroll-snap-x pb-1">
             <HeroKpiCard label="成交额" value={sector.turnover} tone="neutral" compact />
             <HeroKpiCard
               label="资金流入"
@@ -187,8 +187,14 @@ export default function MobileSectorDetailPage() {
               compact
             />
             <HeroKpiCard
+              label="涨跌家数"
+              value={`${sectorStocks.filter(s => s.changePercent >= 0).length}↑ ${sectorStocks.filter(s => s.changePercent < 0).length}↓`}
+              tone={sectorStocks.filter(s => s.changePercent >= 0).length > sectorStocks.filter(s => s.changePercent < 0).length ? "positive" : "negative"}
+              compact
+            />
+            <HeroKpiCard
               label="成分股"
-              value={`${getStocksBySector(sectorId).length}只`}
+              value={`${sectorStocks.length}只`}
               tone="neutral"
               compact
             />

@@ -81,6 +81,19 @@ export default function StockDetailPage() {
                 <span className="text-sm text-[var(--text-muted)] font-mono-nums">
                   {stock.code}
                 </span>
+                <span
+                  className="text-[10px] px-2 py-0.5 rounded-full font-medium"
+                  style={{
+                    background: "rgba(52,211,153,0.1)",
+                    color: "#34D399",
+                    border: "1px solid rgba(52,211,153,0.2)",
+                  }}
+                >
+                  已收盘
+                </span>
+                <span className="text-[10px] text-[var(--text-muted)] font-mono-nums">
+                  15:00:00
+                </span>
                 <button
                   onClick={() =>
                     router.push(`/sectors/${stock.sectorId}`)
