@@ -12,7 +12,7 @@ interface RoboticsCanvasProps {
 /**
  * Canvas 2D visual for Robotics — Engineering Blueprint style
  * - Clear mechanical arm structure: base → upper arm → elbow → forearm → end-effector
- * - Joint breathing: joints slowly pulse in radius (±1-2px, period 8-12s)
+ * - Joint breathing: joints slowly pulse in radius (±2px, period 8-12s)
  * - Trajectory arc: dashed arc showing arm motion range, slowly draws itself
  * - Coordinate system: faint axes through base joint with tick marks
  * - Angle markings: small arc segments near base and elbow
@@ -54,32 +54,54 @@ export default function RoboticsCanvas({
         const orange = "#f59e0b";
         const amber = "#d97706";
 
+        // --- Arm shadow (depth effect) ---
+        const shadowOffset = 3;
+
         // --- Mechanical arm structure ---
         // Base joint (bottom-left area)
         const baseX = w * 0.22;
         const baseY = h * 0.72;
-        const baseR = 7; // radius 6-8px
+        const baseR = 10; // radius 10px - clearly visible
 
         // Elbow joint (center area)
         const elbowX = w * 0.52;
         const elbowY = h * 0.42;
-        const elbowR = 6; // radius 5-7px
+        const elbowR = 8; // radius 8px - clearly visible
 
         // End-effector (upper-right area)
         const eeX = w * 0.78;
         const eeY = h * 0.25;
-        const eeR = 4.5; // radius 4-5px
+        const eeR = 6; // radius 6px - clearly visible
 
-        // Joint breathing: pulse radius ±1-2px, period 8-12s
-        const basePulse = animOn ? baseR + 1.5 * Math.sin(t * ((2 * Math.PI) / 10)) : baseR;
-        const elbowPulse = animOn ? elbowR + 1.2 * Math.sin(t * ((2 * Math.PI) / 8) + 1.0) : elbowR;
-        const eePulse = animOn ? eeR + 1.0 * Math.sin(t * ((2 * Math.PI) / 12) + 2.0) : eeR;
+        // Joint breathing: pulse radius ±2px, period 8-12s
+        const basePulse = animOn ? baseR + 2.0 * Math.sin(t * ((2 * Math.PI) / 10)) : baseR;
+        const elbowPulse = animOn ? elbowR + 2.0 * Math.sin(t * ((2 * Math.PI) / 8) + 1.0) : elbowR;
+        const eePulse = animOn ? eeR + 2.0 * Math.sin(t * ((2 * Math.PI) / 12) + 2.0) : eeR;
+
+        // --- Arm shadow (very faint copy offset for depth) ---
+        ctx.globalAlpha = 0.04;
+        ctx.strokeStyle = orange;
+        ctx.lineWidth = 2.0;
+        ctx.beginPath();
+        ctx.moveTo(baseX + shadowOffset, baseY + shadowOffset);
+        ctx.lineTo(elbowX + shadowOffset, elbowY + shadowOffset);
+        ctx.stroke();
+        ctx.strokeStyle = amber;
+        ctx.beginPath();
+        ctx.moveTo(elbowX + shadowOffset, elbowY + shadowOffset);
+        ctx.lineTo(eeX + shadowOffset, eeY + shadowOffset);
+        ctx.stroke();
+        // Shadow joints
+        [{ x: baseX, y: baseY, r: basePulse }, { x: elbowX, y: elbowY, r: elbowPulse }, { x: eeX, y: eeY, r: eePulse }].forEach((j) => {
+          ctx.beginPath();
+          ctx.arc(j.x + shadowOffset, j.y + shadowOffset, j.r, 0, Math.PI * 2);
+          ctx.stroke();
+        });
 
         // --- Coordinate system: faint axes through base joint ---
-        // X-axis (horizontal through base)
-        ctx.globalAlpha = 0.06;
+        ctx.globalAlpha = 0.10;
         ctx.strokeStyle = orange;
-        ctx.lineWidth = 0.5;
+        ctx.lineWidth = 0.8;
         ctx.beginPath();
         ctx.moveTo(w * 0.05, baseY);
         ctx.lineTo(w * 0.95, baseY);
@@ -92,7 +114,7 @@ export default function RoboticsCanvas({
         ctx.stroke();
 
         // Tick marks every ~20px along axes
-        ctx.globalAlpha = 0.04;
+        ctx.globalAlpha = 0.08;
         const tickLen = 3;
         for (let x = w * 0.10; x < w * 0.95; x += 20) {
           ctx.beginPath();
@@ -110,9 +132,9 @@ export default function RoboticsCanvas({
         // --- Angle markings near base joint ---
         const hoverAlpha = isHover ? 1.3 : 1;
 
-        ctx.globalAlpha = 0.08 * hoverAlpha;
+        ctx.globalAlpha = 0.12 * hoverAlpha;
         ctx.strokeStyle = orange;
-        ctx.lineWidth = 0.5;
+        ctx.lineWidth = 1.0;
 
         // Angle arc at base: shows upper arm angle
         const baseAngleR = baseR * 2.5;
@@ -123,7 +145,7 @@ export default function RoboticsCanvas({
         ctx.stroke();
 
         // Angle tick marks at base
-        ctx.globalAlpha = 0.06 * hoverAlpha;
+        ctx.globalAlpha = 0.10 * hoverAlpha;
         for (let a = -0.3; a <= 0.3; a += 0.15) {
           const angle = upperArmAngle + a + angleOffset;
           ctx.beginPath();
@@ -133,7 +155,8 @@ export default function RoboticsCanvas({
         }
 
         // Angle arc at elbow
-        ctx.globalAlpha = 0.08 * hoverAlpha;
+        ctx.globalAlpha = 0.12 * hoverAlpha;
+        ctx.lineWidth = 1.0;
         const elbowAngleR = elbowR * 2.2;
         const forearmAngle = Math.atan2(eeY - elbowY, eeX - elbowX);
         ctx.beginPath();
@@ -141,17 +164,15 @@ export default function RoboticsCanvas({
         ctx.stroke();
 
         // --- Trajectory arc: dashed line showing arm motion range ---
-        // Slowly draws itself (dash-offset animation)
         const trajProgress = animOn
           ? (t * 0.08) % 1
           : 0.5;
 
         ctx.setLineDash([6, 10]);
-        ctx.globalAlpha = 0.14 * hoverAlpha;
+        ctx.globalAlpha = 0.20 * hoverAlpha;
         ctx.strokeStyle = amber;
-        ctx.lineWidth = 0.8;
+        ctx.lineWidth = 1.5;
 
-        // Arc from base through elbow to end-effector
         const trajCx = w * 0.50;
         const trajCy = h * 0.55;
         const trajRx = w * 0.32;
@@ -170,18 +191,18 @@ export default function RoboticsCanvas({
         ctx.setLineDash([]);
 
         // --- Upper arm: line from base to elbow ---
-        ctx.globalAlpha = 0.18 * hoverAlpha;
+        ctx.globalAlpha = 0.25 * hoverAlpha;
         ctx.strokeStyle = orange;
-        ctx.lineWidth = 0.8;
+        ctx.lineWidth = 2.0;
         ctx.beginPath();
         ctx.moveTo(baseX, baseY);
         ctx.lineTo(elbowX, elbowY);
         ctx.stroke();
 
         // --- Forearm: line from elbow to end-effector ---
-        ctx.globalAlpha = 0.16 * hoverAlpha;
+        ctx.globalAlpha = 0.22 * hoverAlpha;
         ctx.strokeStyle = amber;
-        ctx.lineWidth = 0.8;
+        ctx.lineWidth = 2.0;
         ctx.beginPath();
         ctx.moveTo(elbowX, elbowY);
         ctx.lineTo(eeX, eeY);
@@ -189,9 +210,9 @@ export default function RoboticsCanvas({
 
         // --- End-effector crosshair ---
         const crossSize = eeR * 2;
-        ctx.globalAlpha = 0.12 * hoverAlpha;
+        ctx.globalAlpha = 0.18 * hoverAlpha;
         ctx.strokeStyle = orange;
-        ctx.lineWidth = 0.5;
+        ctx.lineWidth = 1.0;
         ctx.beginPath();
         ctx.moveTo(eeX - crossSize, eeY);
         ctx.lineTo(eeX + crossSize, eeY);
@@ -203,7 +224,7 @@ export default function RoboticsCanvas({
 
         // Small crosshair ticks
         const cTick = 2;
-        ctx.globalAlpha = 0.08 * hoverAlpha;
+        ctx.globalAlpha = 0.14 * hoverAlpha;
         ctx.beginPath();
         ctx.moveTo(eeX - cTick, eeY - crossSize);
         ctx.lineTo(eeX + cTick, eeY - crossSize);
@@ -230,19 +251,26 @@ export default function RoboticsCanvas({
 
         joints.forEach((joint, i) => {
           const pulseAlpha = animOn
-            ? 0.18 + 0.07 * Math.sin(t * ((2 * Math.PI) / 10) + i * 1.5)
-            : 0.22;
+            ? 0.22 + 0.08 * Math.sin(t * ((2 * Math.PI) / 10) + i * 1.5)
+            : 0.28;
+
+          // Fill with opacity
+          ctx.globalAlpha = Math.min(pulseAlpha * 0.12 * hoverAlpha, 0.30);
+          ctx.fillStyle = joint.color;
+          ctx.beginPath();
+          ctx.arc(joint.x, joint.y, joint.r, 0, Math.PI * 2);
+          ctx.fill();
 
           // Outer ring
-          ctx.globalAlpha = Math.min(pulseAlpha * hoverAlpha, 0.32);
+          ctx.globalAlpha = Math.min(pulseAlpha * hoverAlpha, 0.35);
           ctx.strokeStyle = joint.color;
-          ctx.lineWidth = 0.8;
+          ctx.lineWidth = 1.5;
           ctx.beginPath();
           ctx.arc(joint.x, joint.y, joint.r, 0, Math.PI * 2);
           ctx.stroke();
 
           // Inner dot
-          ctx.globalAlpha = Math.min(pulseAlpha * 0.6 * hoverAlpha, 0.25);
+          ctx.globalAlpha = Math.min(pulseAlpha * 0.6 * hoverAlpha, 0.30);
           ctx.fillStyle = joint.color;
           ctx.beginPath();
           ctx.arc(joint.x, joint.y, joint.r * 0.35, 0, Math.PI * 2);
@@ -252,11 +280,11 @@ export default function RoboticsCanvas({
         // --- Hover: end-effector glow + positioning rectangle ---
         if (isHover) {
           // End-effector glow
-          const glowR = 15;
+          const glowR = 20;
           const grad = ctx.createRadialGradient(eeX, eeY, 0, eeX, eeY, glowR);
           grad.addColorStop(0, orange);
           grad.addColorStop(1, "transparent");
-          ctx.globalAlpha = 0.30;
+          ctx.globalAlpha = 0.38;
           ctx.fillStyle = grad;
           ctx.beginPath();
           ctx.arc(eeX, eeY, glowR, 0, Math.PI * 2);
@@ -264,9 +292,9 @@ export default function RoboticsCanvas({
 
           // Positioning rectangle around end-effector
           const rectSize = 14;
-          ctx.globalAlpha = 0.20;
+          ctx.globalAlpha = 0.28;
           ctx.strokeStyle = amber;
-          ctx.lineWidth = 0.5;
+          ctx.lineWidth = 1.0;
           ctx.strokeRect(eeX - rectSize, eeY - rectSize, rectSize * 2, rectSize * 2);
         }
 

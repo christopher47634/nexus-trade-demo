@@ -11,12 +11,12 @@ interface BaijiuCanvasProps {
 
 /**
  * Canvas 2D visual for 白酒 (Baijiu)
- * - Bottle silhouette: simple outline on right side
- * - Liquid wave lines: 2-3 horizontal wavy lines across middle area
- * - Gold seal texture: faint rectangular pattern on left (opacity 0.04-0.08)
- * - Wave animation: very slow oscillation (12-18s period)
+ * - Bottle silhouette: clear outline on right side, stroke opacity 0.22-0.28
+ * - Liquid wave lines: 4 horizontal wavy lines with 2x amplitude
+ * - Gold seal texture: faint rectangular pattern on left (opacity 0.08-0.14)
+ * - Wave animation: visible oscillation (12-18s period)
  * - Seal breathing: subtle opacity pulse (8-12s)
- * - Hover: bottle edge highlight, wave amplitude slightly increases
+ * - Hover: bottle edge brightens to 0.30-0.40, waves get 1.3x amplitude boost
  * - Colors: amber #b45309 + gold #a16207
  * - Feel: premium aged spirit, understated luxury
  */
@@ -58,8 +58,8 @@ export default function BaijiuCanvas({
 
         // --- Gold seal texture (left side, faint rectangles) ---
         const sealBreath = animOn
-          ? 0.06 + 0.02 * Math.sin(t * ((2 * Math.PI) / 10))
-          : 0.06;
+          ? 0.10 + 0.03 * Math.sin(t * ((2 * Math.PI) / 10))
+          : 0.10;
         const sealX = w * 0.05;
         const sealY = h * 0.20;
         const sealW = w * 0.30;
@@ -68,7 +68,7 @@ export default function BaijiuCanvas({
 
         ctx.globalAlpha = sealBreath * glowMul;
         ctx.strokeStyle = gold;
-        ctx.lineWidth = 0.3;
+        ctx.lineWidth = 0.5;
 
         const cols = Math.floor(sealW / cellSize);
         const rows = Math.floor(sealH / cellSize);
@@ -81,9 +81,9 @@ export default function BaijiuCanvas({
         }
 
         // Seal character hint (vertical lines suggesting calligraphy)
-        ctx.globalAlpha = 0.04 * glowMul;
+        ctx.globalAlpha = 0.08 * glowMul;
         ctx.strokeStyle = gold;
-        ctx.lineWidth = 0.5;
+        ctx.lineWidth = 0.8;
         for (let i = 0; i < 3; i++) {
           const lx = sealX + sealW * 0.3 + i * cellSize * 2;
           ctx.beginPath();
@@ -101,9 +101,37 @@ export default function BaijiuCanvas({
         const neckTop = bottleTop;
         const shoulderY = h * 0.28;
 
-        ctx.globalAlpha = 0.14 * glowMul;
+        // Inner glow pass (slightly smaller, higher opacity)
+        ctx.save();
+        ctx.translate(bottleX + bottleW / 2, (shoulderY + bottleBottom) / 2);
+        ctx.scale(0.92, 0.92);
+        ctx.translate(-(bottleX + bottleW / 2), -((shoulderY + bottleBottom) / 2));
+        ctx.globalAlpha = 0.08 * glowMul;
         ctx.strokeStyle = isHover ? amber : gold;
-        ctx.lineWidth = 0.8;
+        ctx.lineWidth = 1.0;
+        ctx.beginPath();
+        ctx.moveTo(bottleX + bottleW / 2 - neckW / 2, neckTop);
+        ctx.lineTo(bottleX + bottleW / 2 - neckW / 2, shoulderY);
+        ctx.quadraticCurveTo(
+          bottleX, shoulderY - h * 0.02,
+          bottleX, shoulderY + h * 0.08
+        );
+        ctx.lineTo(bottleX, bottleBottom);
+        ctx.lineTo(bottleX + bottleW, bottleBottom);
+        ctx.lineTo(bottleX + bottleW, shoulderY + h * 0.08);
+        ctx.quadraticCurveTo(
+          bottleX + bottleW, shoulderY - h * 0.02,
+          bottleX + bottleW / 2 + neckW / 2, shoulderY
+        );
+        ctx.lineTo(bottleX + bottleW / 2 + neckW / 2, neckTop);
+        ctx.lineTo(bottleX + bottleW / 2 - neckW / 2, neckTop);
+        ctx.stroke();
+        ctx.restore();
+
+        // Outer bottle stroke
+        ctx.globalAlpha = 0.24 * glowMul;
+        ctx.strokeStyle = isHover ? amber : gold;
+        ctx.lineWidth = 1.5;
 
         ctx.beginPath();
         // Neck left
@@ -130,20 +158,20 @@ export default function BaijiuCanvas({
         ctx.lineTo(bottleX + bottleW / 2 - neckW / 2, neckTop);
         ctx.stroke();
 
-        // --- Liquid wave lines ---
-        const waveYBase = [h * 0.42, h * 0.55, h * 0.68];
-        const waveColors = [amber, gold, amber];
-        const waveOpacities = [0.22, 0.18, 0.14];
-        const wavePeriods = [14, 16, 12];
+        // --- Liquid wave lines (4 lines, 2x amplitude) ---
+        const waveYBase = [h * 0.38, h * 0.48, h * 0.58, h * 0.68];
+        const waveColors = [amber, gold, amber, gold];
+        const waveOpacities = [0.28, 0.24, 0.22, 0.18];
+        const wavePeriods = [14, 16, 12, 18];
 
         waveYBase.forEach((baseY, i) => {
-          const amp = h * 0.0225 * waveAmpMul;
+          const amp = h * 0.045 * waveAmpMul; // 2x amplitude (was 0.0225)
           const freq = 2.5 + i * 0.5;
           const phase = t * ((2 * Math.PI) / wavePeriods[i]) + i * 0.8;
 
           ctx.globalAlpha = waveOpacities[i] * glowMul;
           ctx.strokeStyle = waveColors[i];
-          ctx.lineWidth = 0.8;
+          ctx.lineWidth = 1.0;
           ctx.beginPath();
 
           for (let x = 0; x <= w; x += 2) {
@@ -163,11 +191,26 @@ export default function BaijiuCanvas({
           const bGrad = ctx.createRadialGradient(bx, by, 0, bx, by, glowR);
           bGrad.addColorStop(0, amber);
           bGrad.addColorStop(1, "transparent");
-          ctx.globalAlpha = 0.06;
+          ctx.globalAlpha = 0.10;
           ctx.fillStyle = bGrad;
           ctx.beginPath();
           ctx.arc(bx, by, glowR, 0, Math.PI * 2);
           ctx.fill();
+
+          // Hover wave boost — additional highlight lines
+          ctx.globalAlpha = 0.15;
+          ctx.strokeStyle = amber;
+          ctx.lineWidth = 1.5;
+          const boostAmp = h * 0.055;
+          const boostY = h * 0.50;
+          ctx.beginPath();
+          for (let x = 0; x <= w; x += 2) {
+            const wave = Math.sin((x / w) * Math.PI * 3 + t * 0.5) * boostAmp;
+            const y = boostY + wave;
+            if (x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
         }
 
         ctx.globalAlpha = 1;
