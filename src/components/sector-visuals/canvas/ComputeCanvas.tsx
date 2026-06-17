@@ -47,8 +47,8 @@ export default function ComputeCanvas({
         const spacing = 30;
 
         // Subtle grid offset oscillation
-        const offsetX = animOn ? Math.sin(t * 0.3) * 2 : 0;
-        const offsetY = animOn ? Math.cos(t * 0.2) * 2 : 0;
+        const offsetX = animOn ? Math.sin(t * 0.12) * 2 : 0;
+        const offsetY = animOn ? Math.cos(t * 0.08) * 2 : 0;
 
         // Vertical grid lines
         ctx.globalAlpha = 0.1;
@@ -78,9 +78,9 @@ export default function ComputeCanvas({
         const chipW = w - 2 * chipMarginX;
         const chipH = h - 2 * chipMarginY;
 
-        // Pulse opacity via sine wave (~3s period)
+        // Pulse opacity via sine wave (~6.5s period — slow, calm breathing)
         const pulseAlpha = animOn
-          ? 0.15 + 0.1 * Math.sin(t * ((2 * Math.PI) / 3))
+          ? 0.13 + 0.05 * Math.sin(t * ((2 * Math.PI) / 6.5))
           : 0.18;
 
         // Outer chip border
@@ -113,7 +113,7 @@ export default function ComputeCanvas({
           const coreY = h / 2;
           const coreR = Math.min(chipW, chipH) * 0.25;
           const coreAlpha =
-            0.06 + 0.04 * Math.sin(t * ((2 * Math.PI) / 3));
+            0.05 + 0.03 * Math.sin(t * ((2 * Math.PI) / 6.5));
           const grad = ctx.createRadialGradient(
             coreX,
             coreY,

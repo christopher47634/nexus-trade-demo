@@ -45,17 +45,17 @@ export default function OpticalCanvas({
 
         // Lines: diagonal from top-right to bottom-left
         const lines = [
-          { x1: w, y1: 0, x2: 0, y2: h, color: "#c9a84c", opacity: 0.25, lw: 1.5 },
-          { x1: w * 0.9, y1: 0, x2: -w * 0.1, y2: h, color: "#22d3ee", opacity: 0.18, lw: 1.2 },
-          { x1: w * 1.1, y1: h * 0.1, x2: w * 0.1, y2: h * 1.1, color: "#c9a84c", opacity: 0.15, lw: 1 },
-          { x1: w * 0.95, y1: -h * 0.05, x2: -w * 0.05, y2: h * 0.95, color: "#22d3ee", opacity: 0.12, lw: 0.8 },
-          { x1: w * 1.05, y1: h * 0.05, x2: w * 0.05, y2: h * 1.05, color: "#c9a84c", opacity: 0.1, lw: 0.6 },
+          { x1: w, y1: 0, x2: 0, y2: h, color: "#c9a84c", opacity: 0.20, lw: 1.5 },
+          { x1: w * 0.9, y1: 0, x2: -w * 0.1, y2: h, color: "#22d3ee", opacity: 0.14, lw: 1.2 },
+          { x1: w * 1.1, y1: h * 0.1, x2: w * 0.1, y2: h * 1.1, color: "#c9a84c", opacity: 0.10, lw: 1 },
+          { x1: w * 0.95, y1: -h * 0.05, x2: -w * 0.05, y2: h * 0.95, color: "#22d3ee", opacity: 0.08, lw: 0.8 },
+          { x1: w * 1.05, y1: h * 0.05, x2: w * 0.05, y2: h * 1.05, color: "#c9a84c", opacity: 0.06, lw: 0.6 },
         ];
 
         // Draw lines with dashed style
         ctx.setLineDash([8, 16]);
         lines.forEach((line) => {
-          const glowOpacity = isHover ? line.opacity * 1.6 : line.opacity;
+          const glowOpacity = isHover ? line.opacity * 1.15 : line.opacity;
           ctx.beginPath();
           ctx.moveTo(line.x1, line.y1);
           ctx.lineTo(line.x2, line.y2);
@@ -68,16 +68,16 @@ export default function OpticalCanvas({
 
         // Dots traveling along lines
         const dots = [
-          { delay: 0, speed: 0.07, color: "#c9a84c", size: 3, lineIdx: 0 },
-          { delay: 0.25, speed: 0.055, color: "#22d3ee", size: 2.5, lineIdx: 1 },
-          { delay: 0.5, speed: 0.06, color: "#c9a84c", size: 2, lineIdx: 2 },
-          { delay: 0.15, speed: 0.05, color: "#22d3ee", size: 2, lineIdx: 3 },
-          { delay: 0.35, speed: 0.065, color: "#c9a84c", size: 1.8, lineIdx: 4 },
-          { delay: 0.6, speed: 0.058, color: "#22d3ee", size: 2.2, lineIdx: 0 },
-          { delay: 0.45, speed: 0.048, color: "#c9a84c", size: 2, lineIdx: 1 },
+          { delay: 0, speed: 0.029, color: "#c9a84c", size: 3, lineIdx: 0 },
+          { delay: 0.25, speed: 0.023, color: "#22d3ee", size: 2.5, lineIdx: 1 },
+          { delay: 0.5, speed: 0.025, color: "#c9a84c", size: 2, lineIdx: 2 },
+          { delay: 0.15, speed: 0.021, color: "#22d3ee", size: 2, lineIdx: 3 },
+          { delay: 0.35, speed: 0.027, color: "#c9a84c", size: 1.8, lineIdx: 4 },
+          { delay: 0.6, speed: 0.024, color: "#22d3ee", size: 2.2, lineIdx: 0 },
+          { delay: 0.45, speed: 0.020, color: "#c9a84c", size: 2, lineIdx: 1 },
         ];
 
-        const speedMul = isHover ? 1.5 : 1;
+        const speedMul = isHover ? 1.15 : 1;
 
         dots.forEach((dot) => {
           const line = lines[dot.lineIdx];
@@ -90,7 +90,7 @@ export default function OpticalCanvas({
           ctx.beginPath();
           ctx.arc(px, py, dot.size, 0, Math.PI * 2);
           ctx.fillStyle = dot.color;
-          ctx.globalAlpha = isHover ? 0.5 : 0.35;
+          ctx.globalAlpha = isHover ? 0.32 : 0.22;
           ctx.fill();
 
           // Glow effect on hover
@@ -101,7 +101,7 @@ export default function OpticalCanvas({
             grad.addColorStop(0, dot.color);
             grad.addColorStop(1, "transparent");
             ctx.fillStyle = grad;
-            ctx.globalAlpha = 0.2;
+            ctx.globalAlpha = 0.15;
             ctx.fill();
           }
         });

@@ -194,8 +194,8 @@ export default function HotSectorGrid() {
               <HoverGlow
                 enabled
                 color={sector.id === "optical-communication" ? "#D4A574" : "#60A5FA"}
-                radius={110}
-                opacity={0.2}
+                radius={170}
+                opacity={0.14}
               />
             )}
 
