@@ -134,3 +134,17 @@
 | 1 | | | | |
 | 2 | | | | |
 | 3 | | | | |
+
+## 10. P1-E-Polish 测试项
+
+| 测试项 | 结果 | 备注 |
+|--------|------|------|
+| 下单后订单是否写入 localStorage | ⬜ | key: nexus-trade-orders |
+| /orders 是否能看到刚才的订单 | ⬜ | 表格应显示完整字段 |
+| 刷新页面后订单是否还在 | ⬜ | localStorage 持久化 |
+| Demo Mode 是否能从首页连续走完整路径 | ⬜ | 8步引导 |
+| 退出 Demo Mode 是否恢复正常 | ⬜ | 清除 localStorage demoMode/demoModeStep |
+| 错误 sectorId 是否显示 ErrorState | ⬜ | 访问 /sectors/nonexistent |
+| 错误 stockCode 是否显示 ErrorState | ⬜ | 访问 /stocks/999999 |
+| 手机端交易页是否无底部 Tab 干扰 | ⬜ | /mobile/trade/[code] |
+| build 是否通过 | ⬜ | npm run build |
