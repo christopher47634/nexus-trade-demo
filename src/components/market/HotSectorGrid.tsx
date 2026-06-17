@@ -75,6 +75,11 @@ export default function HotSectorGrid() {
         return (
           <motion.div
             key={sector.id}
+            data-demo-highlight={
+              sector.id === "optical-communication"
+                ? "optical-communication"
+                : undefined
+            }
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{

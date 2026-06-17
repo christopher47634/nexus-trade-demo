@@ -5,18 +5,21 @@ import {
   LayoutDashboard,
   TrendingUp,
   Briefcase,
+  ClipboardList,
   Settings,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import ThemeSwitcher from "@/components/common/ThemeSwitcher";
+import { DemoButton } from "@/components/demo/DemoMode";
 import { motion } from "framer-motion";
 
 const navItems = [
   { icon: LayoutDashboard, label: "市场", href: "/" },
   { icon: TrendingUp, label: "板块", href: "/#sectors" },
   { icon: Briefcase, label: "持仓", href: "/#portfolio" },
+  { icon: ClipboardList, label: "订单", href: "/orders" },
   { icon: Settings, label: "设置", href: "/#settings" },
 ];
 
@@ -75,6 +78,7 @@ export default function DesktopShell({
 
         {/* Bottom actions */}
         <div className="flex flex-col items-center gap-2">
+          <DemoButton />
           <ThemeSwitcher />
         </div>
       </motion.aside>

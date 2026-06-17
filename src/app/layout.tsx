@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "@/styles/globals.css";
+import DemoWrapper from "@/components/demo/DemoWrapper";
 
 export const metadata: Metadata = {
   title: "NexusTrade · 高质感股票交易终端",
@@ -13,7 +14,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN">
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        <DemoWrapper>{children}</DemoWrapper>
+      </body>
     </html>
   );
 }
