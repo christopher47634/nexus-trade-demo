@@ -1,5 +1,5 @@
 import type { AccountSummary, Position, AccountTransaction, PortfolioHistory } from '@/types/account';
-import { defaultAccount } from '@/mock/account';
+import { defaultAccount, getAccountSummary } from '@/mock/account';
 import { mockPositions } from '@/mock/positions';
 import { mockTransactions } from '@/mock/accountTransactions';
 import { mockPortfolioHistory } from '@/mock/portfolioHistory';
@@ -80,24 +80,22 @@ export function savePortfolioHistory(history: PortfolioHistory[]): void {
 export function initializeAccount(): void {
   if (!isClient()) return;
 
-  // Only initialize if account key doesn't exist yet
-  const existing = window.localStorage.getItem(STORAGE_KEY);
-  if (existing === null) {
-    saveAccount(defaultAccount);
-  }
-
+  // 1. Ensure positions exist
   const existingPositions = window.localStorage.getItem(POSITIONS_KEY);
   if (existingPositions === null) {
     savePositions(mockPositions);
   }
 
-  const existingTransactions = window.localStorage.getItem(TRANSACTIONS_KEY);
-  if (existingTransactions === null) {
+  // 2. Always recompute account from current positions
+  const positions = getPositions();
+  const account = getAccountSummary(positions);
+  saveAccount(account);
+
+  // 3. Transactions & history (only if missing)
+  if (window.localStorage.getItem(TRANSACTIONS_KEY) === null) {
     saveTransactions(mockTransactions);
   }
-
-  const existingHistory = window.localStorage.getItem(HISTORY_KEY);
-  if (existingHistory === null) {
+  if (window.localStorage.getItem(HISTORY_KEY) === null) {
     savePortfolioHistory(mockPortfolioHistory);
   }
 }

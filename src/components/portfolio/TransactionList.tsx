@@ -11,6 +11,7 @@ import {
   Settings,
   List,
 } from "lucide-react";
+import { FlowHoverSurface } from "@/components/common/FlowHoverSurface";
 
 const TYPE_CONFIG: Record<
   AccountTransaction["type"],
@@ -77,6 +78,7 @@ export default function TransactionList({
               transition={{ duration: 0.2, delay: i * 0.02 }}
               className="flex items-center gap-3 px-5 py-2.5 hover:bg-[var(--surface-2)] transition-colors"
             >
+            <FlowHoverSurface variant="subtle">
               {/* Type icon */}
               <div
                 className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -120,6 +122,7 @@ export default function TransactionList({
                 {isPositive ? "+" : ""}
                 {formatCurrency(txn.amount)}
               </span>
+            </FlowHoverSurface>
             </motion.div>
           );
         })}

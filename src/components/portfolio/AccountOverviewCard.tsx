@@ -11,6 +11,7 @@ import {
   Shield,
   Clock,
 } from "lucide-react";
+import { FlowHoverSurface } from "@/components/common/FlowHoverSurface";
 
 const RISK_CONFIG: Record<
   AccountSummary["riskLevel"],
@@ -59,6 +60,7 @@ export default function AccountOverviewCard({
       }}
       className="glass p-5 relative overflow-hidden"
     >
+    <FlowHoverSurface variant="card">
       {/* Subtle ambient glow */}
       <div
         className="absolute inset-0 pointer-events-none"
@@ -204,6 +206,7 @@ export default function AccountOverviewCard({
           </span>
         </div>
       </div>
+    </FlowHoverSurface>
     </motion.div>
   );
 }

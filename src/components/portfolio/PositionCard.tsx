@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { cn, formatCurrency, formatPercent } from "@/lib/utils";
 import type { Position } from "@/types/account";
 import { ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { FlowHoverSurface } from "@/components/common/FlowHoverSurface";
 
 interface PositionCardProps {
   position: Position;
@@ -34,6 +35,7 @@ export default function PositionCard({ position, index }: PositionCardProps) {
         border: "1px solid rgba(255,255,255,0.06)",
       }}
     >
+    <FlowHoverSurface variant="card">
       <div className="flex items-center justify-between mb-2">
         <div>
           <span className="text-sm font-medium text-[var(--text-primary)]">
@@ -81,6 +83,7 @@ export default function PositionCard({ position, index }: PositionCardProps) {
           </span>
         </span>
       </div>
+    </FlowHoverSurface>
     </motion.div>
   );
 }

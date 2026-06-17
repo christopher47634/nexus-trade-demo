@@ -388,3 +388,82 @@ body {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.7; transform: scale(1.08); }
 }
+
+/* ===== FlowHoverSurface ===== */
+.flow-hover {
+  position: relative;
+  overflow: hidden;
+}
+
+.flow-hover__glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 400ms ease-out;
+  background: radial-gradient(
+    300px circle at var(--mouse-x) var(--mouse-y),
+    rgba(212, 175, 55, 0.08),
+    transparent 60%
+  );
+  z-index: 0;
+}
+
+.flow-hover--active .flow-hover__glow {
+  opacity: 1;
+}
+
+/* Card variant */
+.flow-hover--card {
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: border-color 500ms ease-out, box-shadow 500ms ease-out;
+}
+.flow-hover--card.flow-hover--active {
+  border-color: rgba(212, 175, 55, 0.15);
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.05);
+}
+
+/* Row variant */
+.flow-hover--row {
+  transition: background 350ms ease-out;
+}
+.flow-hover--row.flow-hover--active {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(212, 175, 55, 0.04) 30%,
+    rgba(212, 175, 55, 0.06) 50%,
+    rgba(212, 175, 55, 0.04) 70%,
+    transparent 100%
+  );
+}
+
+/* Subtle variant */
+.flow-hover--subtle {
+  transition: background 350ms ease-out;
+}
+.flow-hover--subtle.flow-hover--active {
+  background: rgba(212, 175, 55, 0.03);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .flow-hover__glow,
+  .flow-hover--card,
+  .flow-hover--row,
+  .flow-hover--subtle {
+    transition: none !important;
+  }
+}
+
+/* Mobile: no mouse glow, just press feedback */
+@media (hover: none) {
+  .flow-hover__glow {
+    display: none;
+  }
+  .flow-hover--card:active,
+  .flow-hover--row:active {
+    transform: scale(0.98);
+    transition: transform 150ms ease-out;
+  }
+}

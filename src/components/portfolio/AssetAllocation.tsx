@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import type { AccountSummary, Position } from "@/types/account";
 import { PieChart, AlertTriangle } from "lucide-react";
+import { FlowHoverSurface } from "@/components/common/FlowHoverSurface";
 
 interface AssetAllocationProps {
   account: AccountSummary;
@@ -43,6 +44,7 @@ export default function AssetAllocation({
       }}
       className="glass p-4 relative overflow-hidden"
     >
+    <FlowHoverSurface variant="card">
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -147,6 +149,7 @@ export default function AssetAllocation({
           </div>
         )}
       </div>
+    </FlowHoverSurface>
     </motion.div>
   );
 }

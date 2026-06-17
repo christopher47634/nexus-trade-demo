@@ -4,7 +4,7 @@ import type { Position } from '@/types/account';
 // Positions use real stock codes and sector IDs from src/mock/stocks.ts
 // All computed fields (marketValue, unrealizedPnL, etc.) are internally consistent.
 
-const TOTAL_ASSETS = 1_000_000;
+const INITIAL_CASH = 1_000_000;
 
 function calcPnLPercent(avgCost: number, currentPrice: number): number {
   if (avgCost === 0) return 0;
@@ -33,30 +33,40 @@ const positionDefs = [
   { stockCode: '688256', stockName: '寒武纪', sectorId: 'computing-power', quantity: 100, avgCost: 260, openPrice: 265, currentPrice: 268.90, riskLevel: 'high' as const },
 ];
 
-export const mockPositions: Position[] = positionDefs.map((def) => {
-  const marketValue = calcMarketValue(def.quantity, def.currentPrice);
-  const unrealizedPnL = calcUnrealizedPnL(def.quantity, def.avgCost, def.currentPrice);
-  const unrealizedPnLPercent = calcPnLPercent(def.avgCost, def.currentPrice);
-  const todayPnL = calcTodayPnL(def.quantity, def.openPrice, def.currentPrice);
-  const positionRatio = Number((marketValue / TOTAL_ASSETS).toFixed(4));
+export const mockPositions: Position[] = (() => {
+  // First pass: compute all position data except positionRatio
+  const rawPositions = positionDefs.map((def) => {
+    const marketValue = calcMarketValue(def.quantity, def.currentPrice);
+    const unrealizedPnL = calcUnrealizedPnL(def.quantity, def.avgCost, def.currentPrice);
+    const unrealizedPnLPercent = calcPnLPercent(def.avgCost, def.currentPrice);
+    const todayPnL = calcTodayPnL(def.quantity, def.openPrice, def.currentPrice);
+    return { ...def, marketValue, unrealizedPnL, unrealizedPnLPercent, todayPnL };
+  });
 
-  return {
-    stockCode: def.stockCode,
-    stockName: def.stockName,
-    sectorId: def.sectorId,
-    quantity: def.quantity,
-    availableQuantity: def.quantity, // T+1: all shares available (mock)
-    avgCost: def.avgCost,
-    openPrice: def.openPrice,
-    currentPrice: def.currentPrice,
-    marketValue,
-    unrealizedPnL,
-    unrealizedPnLPercent,
-    todayPnL,
-    positionRatio,
-    riskLevel: def.riskLevel,
-  };
-});
+  // Compute actual total assets from all positions
+  const totalMarketValue = rawPositions.reduce((sum, p) => sum + p.marketValue, 0);
+  const costBasis = rawPositions.reduce((sum, p) => sum + p.avgCost * p.quantity, 0);
+  const availableCash = INITIAL_CASH - costBasis;
+  const totalAssets = availableCash + totalMarketValue;
+
+  // Second pass: set positionRatio based on actual total assets
+  return rawPositions.map((p) => ({
+    stockCode: p.stockCode,
+    stockName: p.stockName,
+    sectorId: p.sectorId,
+    quantity: p.quantity,
+    availableQuantity: p.quantity, // T+1: all shares available (mock)
+    avgCost: p.avgCost,
+    openPrice: p.openPrice,
+    currentPrice: p.currentPrice,
+    marketValue: p.marketValue,
+    unrealizedPnL: p.unrealizedPnL,
+    unrealizedPnLPercent: p.unrealizedPnLPercent,
+    todayPnL: p.todayPnL,
+    positionRatio: totalAssets > 0 ? Number((p.marketValue / totalAssets).toFixed(4)) : 0,
+    riskLevel: p.riskLevel,
+  }));
+})();
 
 // Helper: total market value across all positions
 export function getTotalMarketValue(positions: Position[]): number {

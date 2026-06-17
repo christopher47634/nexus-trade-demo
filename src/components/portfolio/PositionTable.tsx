@@ -9,6 +9,7 @@ import {
   Package,
   AlertTriangle,
 } from "lucide-react";
+import { FlowHoverSurface } from "@/components/common/FlowHoverSurface";
 
 const RISK_CONFIG: Record<
   Position["riskLevel"],
@@ -113,6 +114,7 @@ export default function PositionTable({
               onClick={() => router.push(`/stocks/${pos.stockCode}`)}
               className="grid grid-cols-2 md:grid-cols-[160px_80px_90px_90px_90px_90px_100px_100px_80px_70px_60px] gap-1 px-5 py-3 text-sm items-center hover:bg-[var(--surface-2)] transition-colors duration-150 cursor-pointer"
             >
+            <FlowHoverSurface variant="row">
               {/* Stock */}
               <div className="flex flex-col">
                 <span className="text-[var(--text-primary)] font-medium">
@@ -213,6 +215,7 @@ export default function PositionTable({
                   {risk.label}
                 </span>
               </span>
+            </FlowHoverSurface>
             </motion.div>
           );
         })}

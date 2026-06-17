@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { cn, formatCurrency } from "@/lib/utils";
 import type { PortfolioHistory } from "@/types/account";
 import { Activity } from "lucide-react";
+import { FlowHoverSurface } from "@/components/common/FlowHoverSurface";
 
 interface PortfolioMiniChartProps {
   history: PortfolioHistory[];
@@ -61,6 +62,7 @@ export default function PortfolioMiniChart({
       }}
       className="glass p-4 relative overflow-hidden"
     >
+    <FlowHoverSurface variant="card">
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -144,6 +146,7 @@ export default function PortfolioMiniChart({
           </span>
         </div>
       </div>
+    </FlowHoverSurface>
     </motion.div>
   );
 }
