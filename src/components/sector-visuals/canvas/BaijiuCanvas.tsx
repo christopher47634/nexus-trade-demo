@@ -7,6 +7,7 @@ interface BaijiuCanvasProps {
   height: number;
   animationsEnabled?: boolean;
   hovered?: boolean;
+  hoverIntensity?: number;
 }
 
 /**
@@ -25,6 +26,7 @@ export default function BaijiuCanvas({
   height,
   animationsEnabled = true,
   hovered = false,
+  hoverIntensity = 0,
 }: BaijiuCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animFrameRef = useRef<number>(0);
@@ -32,6 +34,7 @@ export default function BaijiuCanvas({
   const timeRef = useRef(0);
   const hoveredRef = useRef(false);
   const animEnabledRef = useRef(animationsEnabled);
+  const hoverIntensityRef = useRef(0);
 
   useEffect(() => {
     hoveredRef.current = hovered;
@@ -40,6 +43,10 @@ export default function BaijiuCanvas({
   useEffect(() => {
     animEnabledRef.current = animationsEnabled;
   }, [animationsEnabled]);
+
+  useEffect(() => {
+    hoverIntensityRef.current = hoverIntensity ?? 0;
+  }, [hoverIntensity]);
 
   const draw = useCallback(
     (w: number, h: number, t: number, isHover: boolean, animOn: boolean) => {
@@ -129,7 +136,7 @@ export default function BaijiuCanvas({
         ctx.restore();
 
         // Outer bottle stroke
-        ctx.globalAlpha = 0.24 * glowMul;
+        ctx.globalAlpha = (0.24 + hoverIntensityRef.current * 0.04) * glowMul;
         ctx.strokeStyle = isHover ? amber : gold;
         ctx.lineWidth = 1.5;
 

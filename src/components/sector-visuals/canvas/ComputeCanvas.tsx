@@ -7,6 +7,7 @@ interface ComputeCanvasProps {
   height: number;
   animationsEnabled?: boolean;
   hovered?: boolean;
+  hoverIntensity?: number;
 }
 
 /**
@@ -25,6 +26,7 @@ export default function ComputeCanvas({
   height,
   animationsEnabled = true,
   hovered = false,
+  hoverIntensity = 0,
 }: ComputeCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animFrameRef = useRef<number>(0);
@@ -32,6 +34,7 @@ export default function ComputeCanvas({
   const timeRef = useRef(0);
   const hoveredRef = useRef(false);
   const animEnabledRef = useRef(animationsEnabled);
+  const hoverIntensityRef = useRef(0);
 
   useEffect(() => {
     hoveredRef.current = hovered;
@@ -40,6 +43,10 @@ export default function ComputeCanvas({
   useEffect(() => {
     animEnabledRef.current = animationsEnabled;
   }, [animationsEnabled]);
+
+  useEffect(() => {
+    hoverIntensityRef.current = hoverIntensity ?? 0;
+  }, [hoverIntensity]);
 
   const draw = useCallback(
     (w: number, h: number, t: number, animOn: boolean, isHover: boolean) => {
@@ -93,7 +100,7 @@ export default function ComputeCanvas({
           : 0.19;
 
         // Outer chip border with rounded corners
-        ctx.globalAlpha = Math.min(breathAlpha * hoverMul, 0.34);
+        ctx.globalAlpha = Math.min(breathAlpha * hoverMul + hoverIntensityRef.current * 0.04, 0.38);
         ctx.strokeStyle = blue;
         ctx.lineWidth = 1;
         ctx.beginPath();

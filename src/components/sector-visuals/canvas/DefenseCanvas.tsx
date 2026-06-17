@@ -7,6 +7,7 @@ interface DefenseCanvasProps {
   height: number;
   animationsEnabled?: boolean;
   hovered?: boolean;
+  hoverIntensity?: number;
 }
 
 /**
@@ -25,6 +26,7 @@ export default function DefenseCanvas({
   height,
   animationsEnabled = true,
   hovered = false,
+  hoverIntensity = 0,
 }: DefenseCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animFrameRef = useRef<number>(0);
@@ -32,6 +34,7 @@ export default function DefenseCanvas({
   const timeRef = useRef(0);
   const hoveredRef = useRef(false);
   const animEnabledRef = useRef(animationsEnabled);
+  const hoverIntensityRef = useRef(0);
 
   useEffect(() => {
     hoveredRef.current = hovered;
@@ -40,6 +43,10 @@ export default function DefenseCanvas({
   useEffect(() => {
     animEnabledRef.current = animationsEnabled;
   }, [animationsEnabled]);
+
+  useEffect(() => {
+    hoverIntensityRef.current = hoverIntensity ?? 0;
+  }, [hoverIntensity]);
 
   const draw = useCallback(
     (w: number, h: number, t: number, isHover: boolean, animOn: boolean) => {
@@ -127,7 +134,7 @@ export default function DefenseCanvas({
           const sweepLen = Math.min(w, h) * 0.45;
 
           // Sweep line
-          ctx.globalAlpha = 0.12 * glowMul;
+          ctx.globalAlpha = (0.12 + hoverIntensityRef.current * 0.04) * glowMul;
           ctx.strokeStyle = steelBlue;
           ctx.lineWidth = 0.8;
           ctx.beginPath();

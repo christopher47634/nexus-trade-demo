@@ -7,6 +7,7 @@ interface NewEnergyCanvasProps {
   height: number;
   animationsEnabled?: boolean;
   hovered?: boolean;
+  hoverIntensity?: number;
 }
 
 /**
@@ -25,6 +26,7 @@ export default function NewEnergyCanvas({
   height,
   animationsEnabled = true,
   hovered = false,
+  hoverIntensity = 0,
 }: NewEnergyCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animFrameRef = useRef<number>(0);
@@ -32,6 +34,7 @@ export default function NewEnergyCanvas({
   const timeRef = useRef(0);
   const hoveredRef = useRef(false);
   const animEnabledRef = useRef(animationsEnabled);
+  const hoverIntensityRef = useRef(0);
 
   useEffect(() => {
     hoveredRef.current = hovered;
@@ -40,6 +43,10 @@ export default function NewEnergyCanvas({
   useEffect(() => {
     animEnabledRef.current = animationsEnabled;
   }, [animationsEnabled]);
+
+  useEffect(() => {
+    hoverIntensityRef.current = hoverIntensity ?? 0;
+  }, [hoverIntensity]);
 
   const draw = useCallback(
     (w: number, h: number, t: number, isHover: boolean, animOn: boolean) => {
@@ -214,7 +221,7 @@ export default function NewEnergyCanvas({
           ctx.beginPath();
           ctx.arc(px, py, dot.r, 0, Math.PI * 2);
           ctx.fillStyle = dot.color;
-          ctx.globalAlpha = isHover ? 0.35 : 0.22;
+          ctx.globalAlpha = (isHover ? 0.35 : 0.22) + hoverIntensityRef.current * 0.10;
           ctx.fill();
 
           // Subtle glow

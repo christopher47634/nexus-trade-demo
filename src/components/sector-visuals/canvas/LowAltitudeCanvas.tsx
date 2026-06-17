@@ -7,6 +7,7 @@ interface LowAltitudeCanvasProps {
   height: number;
   animationsEnabled?: boolean;
   hovered?: boolean;
+  hoverIntensity?: number;
 }
 
 /**
@@ -25,6 +26,7 @@ export default function LowAltitudeCanvas({
   height,
   animationsEnabled = true,
   hovered = false,
+  hoverIntensity = 0,
 }: LowAltitudeCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animFrameRef = useRef<number>(0);
@@ -32,6 +34,7 @@ export default function LowAltitudeCanvas({
   const timeRef = useRef(0);
   const hoveredRef = useRef(false);
   const animEnabledRef = useRef(animationsEnabled);
+  const hoverIntensityRef = useRef(0);
 
   useEffect(() => {
     hoveredRef.current = hovered;
@@ -40,6 +43,10 @@ export default function LowAltitudeCanvas({
   useEffect(() => {
     animEnabledRef.current = animationsEnabled;
   }, [animationsEnabled]);
+
+  useEffect(() => {
+    hoverIntensityRef.current = hoverIntensity ?? 0;
+  }, [hoverIntensity]);
 
   const draw = useCallback(
     (w: number, h: number, t: number, isHover: boolean, animOn: boolean) => {
@@ -89,7 +96,7 @@ export default function LowAltitudeCanvas({
         if (animOn) {
           const sweepAngle = -Math.PI * 0.3 + ((t * (2 * Math.PI)) / 18) % (Math.PI * 0.5);
           const sweepLen = w * 0.5;
-          ctx.globalAlpha = 0.10 * glowMul;
+          ctx.globalAlpha = (0.10 + hoverIntensityRef.current * 0.04) * glowMul;
           ctx.strokeStyle = teal;
           ctx.lineWidth = 0.8;
           ctx.beginPath();

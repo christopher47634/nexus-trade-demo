@@ -7,6 +7,7 @@ interface PharmaCanvasProps {
   height: number;
   animationsEnabled?: boolean;
   hovered?: boolean;
+  hoverIntensity?: number;
 }
 
 /**
@@ -25,6 +26,7 @@ export default function PharmaCanvas({
   height,
   animationsEnabled = true,
   hovered = false,
+  hoverIntensity = 0,
 }: PharmaCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animFrameRef = useRef<number>(0);
@@ -32,6 +34,7 @@ export default function PharmaCanvas({
   const timeRef = useRef(0);
   const hoveredRef = useRef(false);
   const animEnabledRef = useRef(animationsEnabled);
+  const hoverIntensityRef = useRef(0);
 
   useEffect(() => {
     hoveredRef.current = hovered;
@@ -40,6 +43,10 @@ export default function PharmaCanvas({
   useEffect(() => {
     animEnabledRef.current = animationsEnabled;
   }, [animationsEnabled]);
+
+  useEffect(() => {
+    hoverIntensityRef.current = hoverIntensity ?? 0;
+  }, [hoverIntensity]);
 
   const draw = useCallback(
     (w: number, h: number, t: number, isHover: boolean, animOn: boolean) => {
@@ -110,7 +117,7 @@ export default function PharmaCanvas({
           }
 
           // Node core
-          ctx.globalAlpha = (isHover ? 0.22 : 0.14) * glowMul * nodePulse;
+          ctx.globalAlpha = ((isHover ? 0.22 : 0.14) + hoverIntensityRef.current * 0.04) * glowMul * nodePulse;
           ctx.fillStyle = node.color;
           ctx.beginPath();
           ctx.arc(node.x, node.y, node.r, 0, Math.PI * 2);
