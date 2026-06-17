@@ -9,34 +9,12 @@
  */
 
 import { sectors } from "@/mock/sectors";
-import {
-  Zap,
-  Cpu,
-  MemoryStick,
-  Mountain,
-  Sun,
-  Bot,
-  Plane,
-  Shield,
-  HeartPulse,
-  Wine,
-} from "lucide-react";
+import { sectorIconMap, SectorFallback } from "@/components/icons/SectorIcons";
 import SectorVisualBackground from "@/components/sector/SectorVisualBackground";
 import SectorHeroArtwork from "@/components/sector/SectorHeroArtwork";
 import HeroKpiCard from "@/components/sector/HeroKpiCard";
 
-const iconMap: Record<string, React.ElementType> = {
-  Zap,
-  Cpu,
-  MemoryStick,
-  Mountain,
-  Sun,
-  Bot,
-  Plane,
-  Shield,
-  HeartPulse,
-  Wine,
-};
+const iconMap = sectorIconMap;
 
 export default function VisualTestPage() {
   const sortedSectors = [...sectors].sort((a, b) => a.hotRank - b.hotRank);
@@ -62,7 +40,7 @@ export default function VisualTestPage() {
       {/* 2 rows × 5 columns */}
       <div className="grid grid-cols-5 gap-4">
         {sortedSectors.map((sector) => {
-          const Icon = iconMap[sector.icon] || Zap;
+          const Icon = iconMap[sector.icon] || SectorFallback;
 
           return (
             <div
@@ -135,7 +113,7 @@ export default function VisualTestPage() {
 
       <div className="space-y-6">
         {sortedSectors.map((sector) => {
-          const Icon = iconMap[sector.icon] || Zap;
+          const Icon = iconMap[sector.icon] || SectorFallback;
 
           return (
             <div key={`hero-${sector.id}`} className="space-y-2">
@@ -238,7 +216,7 @@ export default function VisualTestPage() {
 
         <div className="space-y-10">
           {p1hSectors.map((sector) => {
-            const Icon = iconMap[sector.icon] || Zap;
+            const Icon = iconMap[sector.icon] || SectorFallback;
 
             return (
               <div key={`p1h-${sector.id}`} className="space-y-3">

@@ -12,32 +12,10 @@
  */
 
 import { sectors } from "@/mock/sectors";
-import {
-  Zap,
-  Cpu,
-  MemoryStick,
-  Mountain,
-  Sun,
-  Bot,
-  Plane,
-  Shield,
-  HeartPulse,
-  Wine,
-} from "lucide-react";
+import { sectorIconMap, SectorFallback } from "@/components/icons/SectorIcons";
 import SectorVisualBackground from "@/components/sector/SectorVisualBackground";
 
-const iconMap: Record<string, React.ElementType> = {
-  Zap,
-  Cpu,
-  MemoryStick,
-  Mountain,
-  Sun,
-  Bot,
-  Plane,
-  Shield,
-  HeartPulse,
-  Wine,
-};
+const iconMap = sectorIconMap;
 
 export default function SectorsDebugPage() {
   const sortedSectors = [...sectors].sort((a, b) => a.hotRank - b.hotRank);
@@ -131,7 +109,7 @@ export default function SectorsDebugPage() {
 
         <div className="grid grid-cols-5 gap-5">
           {sortedSectors.map((sector) => {
-            const Icon = iconMap[sector.icon] || Zap;
+            const Icon = iconMap[sector.icon] || SectorFallback;
             const isUp = sector.changePercent >= 0;
 
             return (
@@ -252,7 +230,7 @@ export default function SectorsDebugPage() {
 
         <div className="grid grid-cols-5 gap-3">
           {sortedSectors.map((sector) => {
-            const Icon = iconMap[sector.icon] || Zap;
+            const Icon = iconMap[sector.icon] || SectorFallback;
             const isUp = sector.changePercent >= 0;
 
             return (

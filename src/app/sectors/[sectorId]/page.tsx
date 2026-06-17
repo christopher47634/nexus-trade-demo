@@ -16,18 +16,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import {
-  Zap,
-  Cpu,
-  MemoryStick,
-  Mountain,
-  Sun,
-  Bot,
-  Plane,
-  Shield,
-  HeartPulse,
-  Wine,
-} from "lucide-react";
+import { sectorIconMap, SectorFallback } from "@/components/icons/SectorIcons";
 import SectorHeroArtwork from "@/components/sector/SectorHeroArtwork";
 import HeroKpiCard from "@/components/sector/HeroKpiCard";
 import EmptyState from "@/components/common/EmptyState";
@@ -35,18 +24,7 @@ import ErrorState from "@/components/common/ErrorState";
 import { isCanvasVisualsEnabled } from "@/lib/feature-flags";
 import { getSectorCanvas } from "@/components/sector-visuals/getSectorCanvas";
 
-const iconMap: Record<string, React.ElementType> = {
-  Zap,
-  Cpu,
-  MemoryStick,
-  Mountain,
-  Sun,
-  Bot,
-  Plane,
-  Shield,
-  HeartPulse,
-  Wine,
-};
+const iconMap = sectorIconMap;
 
 /** Canvas 2D background for sector detail hero — measures container dynamically */
 function CanvasHeroBackground({
@@ -166,7 +144,7 @@ export default function SectorDetailPage() {
     );
   }
 
-  const Icon = iconMap[sector.icon] || Zap;
+  const Icon = iconMap[sector.icon] || SectorFallback;
   const isUp = sector.changePercent >= 0;
 
   const handleSort = (key: SortKey) => {
