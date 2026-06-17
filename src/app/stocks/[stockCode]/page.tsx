@@ -19,6 +19,7 @@ import {
   Activity,
   Repeat,
   Building2,
+  AlertTriangle,
 } from "lucide-react";
 
 export default function StockDetailPage() {
@@ -69,6 +70,27 @@ export default function StockDetailPage() {
           <ArrowLeft size={16} />
           返回
         </motion.button>
+
+        {/* Risk warning banner for high-volatility stocks */}
+        {stock.riskWarning && (
+          <motion.div
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-start gap-2.5 p-3.5 rounded-xl"
+            style={{
+              background: "rgba(251,191,36,0.08)",
+              border: "1px solid rgba(251,191,36,0.2)",
+            }}
+          >
+            <AlertTriangle
+              size={15}
+              className="text-yellow-400 mt-0.5 shrink-0"
+            />
+            <span className="text-xs text-yellow-300/90 leading-relaxed">
+              {stock.riskWarning}
+            </span>
+          </motion.div>
+        )}
 
         {/* Stock Header */}
         <motion.div

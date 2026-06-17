@@ -15,6 +15,9 @@ import {
   Flame,
   ChevronDown,
   ChevronUp,
+  ShieldAlert,
+  ShieldCheck,
+  Shield,
 } from "lucide-react";
 import { sectorIconMap, SectorFallback } from "@/components/icons/SectorIcons";
 import SectorHeroArtwork from "@/components/sector/SectorHeroArtwork";
@@ -239,6 +242,8 @@ export default function SectorDetailPage() {
             </div>
 
             <div className="text-right">
+              {/* Risk level badge */}
+              <RiskLevelBadge level={sector.riskLevel} />
               <motion.div
                 layoutId={`sector-change-${sectorId}`}
                 initial={{ opacity: 0, scale: 0.8 }}
@@ -519,5 +524,45 @@ function SectorTrendChart({
       </h3>
       <div ref={containerRef} className="w-full" style={{ height: 200 }} />
     </motion.div>
+  );
+}
+
+function RiskLevelBadge({ level }: { level: "low" | "medium" | "high" }) {
+  const config = {
+    low: {
+      label: "低风险",
+      color: "#34D399",
+      bg: "rgba(52,211,153,0.12)",
+      border: "rgba(52,211,153,0.25)",
+      icon: <ShieldCheck size={12} />,
+    },
+    medium: {
+      label: "中风险",
+      color: "#FBBF24",
+      bg: "rgba(251,191,36,0.12)",
+      border: "rgba(251,191,36,0.25)",
+      icon: <Shield size={12} />,
+    },
+    high: {
+      label: "高风险",
+      color: "#EF4444",
+      bg: "rgba(239,68,68,0.12)",
+      border: "rgba(239,68,68,0.25)",
+      icon: <ShieldAlert size={12} />,
+    },
+  };
+  const c = config[level];
+  return (
+    <span
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium mb-2"
+      style={{
+        color: c.color,
+        background: c.bg,
+        border: `1px solid ${c.border}`,
+      }}
+    >
+      {c.icon}
+      {c.label}
+    </span>
   );
 }
