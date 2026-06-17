@@ -66,13 +66,14 @@ export default function NewEnergyCanvas({
         // Battery body
         ctx.globalAlpha = 0.16 * glowMul;
         ctx.strokeStyle = emerald;
-        ctx.lineWidth = 0.8;
+        ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.roundRect(batX, batY, batW, batH, 2);
         ctx.stroke();
 
         // + terminal (small rectangle on top)
-        ctx.globalAlpha = 0.14 * glowMul;
+        ctx.globalAlpha = 0.18 * glowMul;
+        ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.roundRect(
           batX + batW / 2 - termW / 2,
@@ -163,7 +164,7 @@ export default function NewEnergyCanvas({
         const pvCols = Math.floor((w * 0.32) / pvCellSize);
         const pvRows = Math.floor((h * 0.70) / pvCellSize);
 
-        ctx.globalAlpha = 0.04;
+        ctx.globalAlpha = 0.08;
         ctx.strokeStyle = cyan;
         ctx.lineWidth = 0.3;
 
@@ -180,7 +181,7 @@ export default function NewEnergyCanvas({
           for (let r = 0; r < pvRows; r += 4) {
             const px = pvStartX + c * pvCellSize;
             const py = pvStartY + r * pvCellSize;
-            ctx.globalAlpha = 0.08;
+            ctx.globalAlpha = 0.12;
             ctx.fillStyle = cyan;
             ctx.fillRect(px, py, pvCellSize - 1, pvCellSize - 1);
           }
@@ -213,7 +214,7 @@ export default function NewEnergyCanvas({
           ctx.beginPath();
           ctx.arc(px, py, dot.r, 0, Math.PI * 2);
           ctx.fillStyle = dot.color;
-          ctx.globalAlpha = isHover ? 0.26 : 0.18;
+          ctx.globalAlpha = isHover ? 0.35 : 0.22;
           ctx.fill();
 
           // Subtle glow

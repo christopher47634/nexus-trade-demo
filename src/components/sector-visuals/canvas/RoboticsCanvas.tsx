@@ -10,16 +10,15 @@ interface RoboticsCanvasProps {
 }
 
 /**
- * Canvas 2D visual for 机器人 (Robotics) — NEW
- * - 3 circular joint nodes (radius 4-6px) connected by arc lines
- * - Joint positions: roughly forming an arm shape (shoulder, elbow, wrist)
- * - Coordinate lines: faint crosshairs at each joint
- * - Angle markings: tiny tick marks near joints
- * - Joint rotation: slow rotation (12s period)
- * - Trajectory arc: dashed line showing arm path, slowly drawing
- * - Hover: coordinate points appear at each joint, slightly brighter
- * - Colors: orange #f59e0b + amber #d97706
- * - Feel: engineering blueprint, industrial precision
+ * Canvas 2D visual for Robotics — Engineering Blueprint style
+ * - Clear mechanical arm structure: base → upper arm → elbow → forearm → end-effector
+ * - Joint breathing: joints slowly pulse in radius (±1-2px, period 8-12s)
+ * - Trajectory arc: dashed arc showing arm motion range, slowly draws itself
+ * - Coordinate system: faint axes through base joint with tick marks
+ * - Angle markings: small arc segments near base and elbow
+ * - Hover: end-effector glow + positioning rectangle, joints brighten
+ * - Colors: orange #f59e0b, amber #d97706
+ * - Feel: engineering schematic, industrial precision
  */
 export default function RoboticsCanvas({
   width,
@@ -54,233 +53,221 @@ export default function RoboticsCanvas({
 
         const orange = "#f59e0b";
         const amber = "#d97706";
-        const glowMul = isHover ? 1.15 : 1;
 
-        // Joint positions forming an arm shape
-        // Shoulder: upper-left area, Elbow: center, Wrist: lower-right area
-        const joints = [
-          { x: w * 0.25, y: h * 0.28, r: 5.5, label: "S" },  // Shoulder
-          { x: w * 0.50, y: h * 0.48, r: 5, label: "E" },     // Elbow
-          { x: w * 0.72, y: h * 0.62, r: 4.5, label: "W" },   // Wrist
-        ];
+        // --- Mechanical arm structure ---
+        // Base joint (bottom-left area)
+        const baseX = w * 0.22;
+        const baseY = h * 0.72;
+        const baseR = 7; // radius 6-8px
 
-        // Slow rotation angle for joint articulation
-        const rotAngle = animOn
-          ? Math.sin(t * ((2 * Math.PI) / 12)) * 0.08
-          : 0;
+        // Elbow joint (center area)
+        const elbowX = w * 0.52;
+        const elbowY = h * 0.42;
+        const elbowR = 6; // radius 5-7px
 
-        // --- Arm segments connecting joints (with slight arc) ---
-        // Segment: Shoulder → Elbow
-        const seg1MidX = (joints[0].x + joints[1].x) / 2;
-        const seg1MidY = (joints[0].y + joints[1].y) / 2 - w * 0.04;
+        // End-effector (upper-right area)
+        const eeX = w * 0.78;
+        const eeY = h * 0.25;
+        const eeR = 4.5; // radius 4-5px
 
-        ctx.globalAlpha = 0.16 * glowMul;
-        ctx.strokeStyle = orange;
-        ctx.lineWidth = 0.8;
-        ctx.beginPath();
-        ctx.moveTo(joints[0].x, joints[0].y);
-        ctx.quadraticCurveTo(seg1MidX, seg1MidY, joints[1].x, joints[1].y);
-        ctx.stroke();
+        // Joint breathing: pulse radius ±1-2px, period 8-12s
+        const basePulse = animOn ? baseR + 1.5 * Math.sin(t * ((2 * Math.PI) / 10)) : baseR;
+        const elbowPulse = animOn ? elbowR + 1.2 * Math.sin(t * ((2 * Math.PI) / 8) + 1.0) : elbowR;
+        const eePulse = animOn ? eeR + 1.0 * Math.sin(t * ((2 * Math.PI) / 12) + 2.0) : eeR;
 
-        // Segment: Elbow → Wrist
-        const seg2MidX = (joints[1].x + joints[2].x) / 2;
-        const seg2MidY = (joints[1].y + joints[2].y) / 2 + w * 0.03;
-
-        ctx.globalAlpha = 0.14 * glowMul;
-        ctx.strokeStyle = amber;
-        ctx.beginPath();
-        ctx.moveTo(joints[1].x, joints[1].y);
-        ctx.quadraticCurveTo(seg2MidX, seg2MidY, joints[2].x, joints[2].y);
-        ctx.stroke();
-
-        // --- Coordinate crosshairs at each joint ---
-        joints.forEach((joint, i) => {
-          const crossSize = joint.r * 2.5;
-          const crossAlpha = isHover ? 0.18 : 0.10;
-
-          ctx.globalAlpha = crossAlpha;
-          ctx.strokeStyle = i === 1 ? amber : orange;
-          ctx.lineWidth = 0.4;
-
-          // Horizontal crosshair
-          ctx.beginPath();
-          ctx.moveTo(joint.x - crossSize, joint.y);
-          ctx.lineTo(joint.x + crossSize, joint.y);
-          ctx.stroke();
-
-          // Vertical crosshair
-          ctx.beginPath();
-          ctx.moveTo(joint.x, joint.y - crossSize);
-          ctx.lineTo(joint.x, joint.y + crossSize);
-          ctx.stroke();
-
-          // Tick marks at crosshair ends
-          const tickLen = 2;
-          ctx.globalAlpha = crossAlpha * 0.7;
-          // Top tick
-          ctx.beginPath();
-          ctx.moveTo(joint.x - tickLen, joint.y - crossSize);
-          ctx.lineTo(joint.x + tickLen, joint.y - crossSize);
-          ctx.stroke();
-          // Bottom tick
-          ctx.beginPath();
-          ctx.moveTo(joint.x - tickLen, joint.y + crossSize);
-          ctx.lineTo(joint.x + tickLen, joint.y + crossSize);
-          ctx.stroke();
-          // Left tick
-          ctx.beginPath();
-          ctx.moveTo(joint.x - crossSize, joint.y - tickLen);
-          ctx.lineTo(joint.x - crossSize, joint.y + tickLen);
-          ctx.stroke();
-          // Right tick
-          ctx.beginPath();
-          ctx.moveTo(joint.x + crossSize, joint.y - tickLen);
-          ctx.lineTo(joint.x + crossSize, joint.y + tickLen);
-          ctx.stroke();
-        });
-
-        // --- Angle markings (tiny arc ticks near joints) ---
-        // Shoulder angle
-        ctx.globalAlpha = 0.12;
-        ctx.strokeStyle = orange;
-        ctx.lineWidth = 0.5;
-        const angleR = joints[0].r * 2;
-        for (let a = -0.5; a < 0.8; a += 0.3) {
-          const angle = a + (animOn ? rotAngle * 2 : 0);
-          const tx1 = joints[0].x + Math.cos(angle) * angleR;
-          const ty1 = joints[0].y + Math.sin(angle) * angleR;
-          const tx2 = joints[0].x + Math.cos(angle) * (angleR + 3);
-          const ty2 = joints[0].y + Math.sin(angle) * (angleR + 3);
-          ctx.beginPath();
-          ctx.moveTo(tx1, ty1);
-          ctx.lineTo(tx2, ty2);
-          ctx.stroke();
-        }
-
-        // Elbow angle
-        ctx.globalAlpha = 0.10;
-        ctx.strokeStyle = amber;
-        const angleR2 = joints[1].r * 2;
-        for (let a = 1.8; a < 3.0; a += 0.3) {
-          const angle = a + (animOn ? rotAngle * 1.5 : 0);
-          const tx1 = joints[1].x + Math.cos(angle) * angleR2;
-          const ty1 = joints[1].y + Math.sin(angle) * angleR2;
-          const tx2 = joints[1].x + Math.cos(angle) * (angleR2 + 3);
-          const ty2 = joints[1].y + Math.sin(angle) * (angleR2 + 3);
-          ctx.beginPath();
-          ctx.moveTo(tx1, ty1);
-          ctx.lineTo(tx2, ty2);
-          ctx.stroke();
-        }
-
-        // --- Joint rotation arcs ---
-        // Slowly rotating small arc near shoulder
-        const rotArcR = joints[0].r * 1.8;
-        const rotStart = animOn ? t * 0.3 : 0;
-        ctx.globalAlpha = 0.10 * glowMul;
+        // --- Coordinate system: faint axes through base joint ---
+        // X-axis (horizontal through base)
+        ctx.globalAlpha = 0.06;
         ctx.strokeStyle = orange;
         ctx.lineWidth = 0.5;
         ctx.beginPath();
-        ctx.arc(joints[0].x, joints[0].y, rotArcR, rotStart, rotStart + 1.2);
+        ctx.moveTo(w * 0.05, baseY);
+        ctx.lineTo(w * 0.95, baseY);
         ctx.stroke();
 
-        // Rotating arc near elbow
-        const rotArcR2 = joints[1].r * 1.6;
-        ctx.globalAlpha = 0.08 * glowMul;
-        ctx.strokeStyle = amber;
+        // Y-axis (vertical through base)
         ctx.beginPath();
-        ctx.arc(joints[1].x, joints[1].y, rotArcR2, rotStart + 1.5, rotStart + 2.5);
+        ctx.moveTo(baseX, h * 0.05);
+        ctx.lineTo(baseX, h * 0.95);
         ctx.stroke();
 
-        // --- Trajectory arc: dashed line showing arm path ---
-        // Path from shoulder through elbow to wrist, with slight arc
+        // Tick marks every ~20px along axes
+        ctx.globalAlpha = 0.04;
+        const tickLen = 3;
+        for (let x = w * 0.10; x < w * 0.95; x += 20) {
+          ctx.beginPath();
+          ctx.moveTo(x, baseY - tickLen);
+          ctx.lineTo(x, baseY + tickLen);
+          ctx.stroke();
+        }
+        for (let y = h * 0.10; y < h * 0.95; y += 20) {
+          ctx.beginPath();
+          ctx.moveTo(baseX - tickLen, y);
+          ctx.lineTo(baseX + tickLen, y);
+          ctx.stroke();
+        }
+
+        // --- Angle markings near base joint ---
+        const hoverAlpha = isHover ? 1.3 : 1;
+
+        ctx.globalAlpha = 0.08 * hoverAlpha;
+        ctx.strokeStyle = orange;
+        ctx.lineWidth = 0.5;
+
+        // Angle arc at base: shows upper arm angle
+        const baseAngleR = baseR * 2.5;
+        const upperArmAngle = Math.atan2(elbowY - baseY, elbowX - baseX);
+        const angleOffset = animOn ? Math.sin(t * ((2 * Math.PI) / 14)) * 0.05 : 0;
+        ctx.beginPath();
+        ctx.arc(baseX, baseY, baseAngleR, upperArmAngle - 0.4 + angleOffset, upperArmAngle + 0.4 + angleOffset, false);
+        ctx.stroke();
+
+        // Angle tick marks at base
+        ctx.globalAlpha = 0.06 * hoverAlpha;
+        for (let a = -0.3; a <= 0.3; a += 0.15) {
+          const angle = upperArmAngle + a + angleOffset;
+          ctx.beginPath();
+          ctx.moveTo(baseX + Math.cos(angle) * baseAngleR, baseY + Math.sin(angle) * baseAngleR);
+          ctx.lineTo(baseX + Math.cos(angle) * (baseAngleR + 4), baseY + Math.sin(angle) * (baseAngleR + 4));
+          ctx.stroke();
+        }
+
+        // Angle arc at elbow
+        ctx.globalAlpha = 0.08 * hoverAlpha;
+        const elbowAngleR = elbowR * 2.2;
+        const forearmAngle = Math.atan2(eeY - elbowY, eeX - elbowX);
+        ctx.beginPath();
+        ctx.arc(elbowX, elbowY, elbowAngleR, forearmAngle - 0.3, forearmAngle + 0.3, false);
+        ctx.stroke();
+
+        // --- Trajectory arc: dashed line showing arm motion range ---
+        // Slowly draws itself (dash-offset animation)
         const trajProgress = animOn
           ? (t * 0.08) % 1
           : 0.5;
 
         ctx.setLineDash([6, 10]);
-        ctx.globalAlpha = 0.10 * glowMul;
-        ctx.strokeStyle = orange;
-        ctx.lineWidth = 0.5;
+        ctx.globalAlpha = 0.14 * hoverAlpha;
+        ctx.strokeStyle = amber;
+        ctx.lineWidth = 0.8;
 
-        // Draw partial trajectory
+        // Arc from base through elbow to end-effector
+        const trajCx = w * 0.50;
+        const trajCy = h * 0.55;
+        const trajRx = w * 0.32;
+        const trajRy = h * 0.28;
+
         ctx.beginPath();
-        const trajCx = w * 0.48;
-        const trajCy = h * 0.35;
-        const trajRx = w * 0.30;
-        const trajRy = h * 0.22;
         ctx.ellipse(
           trajCx, trajCy,
           trajRx, trajRy,
           0.3,
-          -Math.PI * 0.6,
-          -Math.PI * 0.6 + trajProgress * Math.PI * 1.2,
+          -Math.PI * 0.7,
+          -Math.PI * 0.7 + trajProgress * Math.PI * 1.4,
           false
         );
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // --- Joint nodes (circles) ---
+        // --- Upper arm: line from base to elbow ---
+        ctx.globalAlpha = 0.18 * hoverAlpha;
+        ctx.strokeStyle = orange;
+        ctx.lineWidth = 0.8;
+        ctx.beginPath();
+        ctx.moveTo(baseX, baseY);
+        ctx.lineTo(elbowX, elbowY);
+        ctx.stroke();
+
+        // --- Forearm: line from elbow to end-effector ---
+        ctx.globalAlpha = 0.16 * hoverAlpha;
+        ctx.strokeStyle = amber;
+        ctx.lineWidth = 0.8;
+        ctx.beginPath();
+        ctx.moveTo(elbowX, elbowY);
+        ctx.lineTo(eeX, eeY);
+        ctx.stroke();
+
+        // --- End-effector crosshair ---
+        const crossSize = eeR * 2;
+        ctx.globalAlpha = 0.12 * hoverAlpha;
+        ctx.strokeStyle = orange;
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.moveTo(eeX - crossSize, eeY);
+        ctx.lineTo(eeX + crossSize, eeY);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(eeX, eeY - crossSize);
+        ctx.lineTo(eeX, eeY + crossSize);
+        ctx.stroke();
+
+        // Small crosshair ticks
+        const cTick = 2;
+        ctx.globalAlpha = 0.08 * hoverAlpha;
+        ctx.beginPath();
+        ctx.moveTo(eeX - cTick, eeY - crossSize);
+        ctx.lineTo(eeX + cTick, eeY - crossSize);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(eeX - cTick, eeY + crossSize);
+        ctx.lineTo(eeX + cTick, eeY + crossSize);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(eeX - crossSize, eeY - cTick);
+        ctx.lineTo(eeX - crossSize, eeY + cTick);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(eeX + crossSize, eeY - cTick);
+        ctx.lineTo(eeX + crossSize, eeY + cTick);
+        ctx.stroke();
+
+        // --- Joint nodes (circles with breathing) ---
+        const joints = [
+          { x: baseX, y: baseY, r: basePulse, color: orange },
+          { x: elbowX, y: elbowY, r: elbowPulse, color: amber },
+          { x: eeX, y: eeY, r: eePulse, color: orange },
+        ];
+
         joints.forEach((joint, i) => {
           const pulseAlpha = animOn
-            ? 0.14 + 0.04 * Math.sin(t * ((2 * Math.PI) / 12) + i * 1.2)
-            : 0.16;
+            ? 0.18 + 0.07 * Math.sin(t * ((2 * Math.PI) / 10) + i * 1.5)
+            : 0.22;
 
           // Outer ring
-          ctx.globalAlpha = pulseAlpha * glowMul;
-          ctx.strokeStyle = i === 1 ? amber : orange;
+          ctx.globalAlpha = Math.min(pulseAlpha * hoverAlpha, 0.32);
+          ctx.strokeStyle = joint.color;
           ctx.lineWidth = 0.8;
           ctx.beginPath();
           ctx.arc(joint.x, joint.y, joint.r, 0, Math.PI * 2);
           ctx.stroke();
 
           // Inner dot
-          ctx.globalAlpha = (pulseAlpha * 0.7) * glowMul;
-          ctx.fillStyle = i === 1 ? amber : orange;
+          ctx.globalAlpha = Math.min(pulseAlpha * 0.6 * hoverAlpha, 0.25);
+          ctx.fillStyle = joint.color;
           ctx.beginPath();
           ctx.arc(joint.x, joint.y, joint.r * 0.35, 0, Math.PI * 2);
           ctx.fill();
         });
 
-        // --- Hover: coordinate定位点 at each joint ---
+        // --- Hover: end-effector glow + positioning rectangle ---
         if (isHover) {
-          joints.forEach((joint, i) => {
-            // Small diamond marker at joint
-            const dSize = joint.r * 1.5;
-            ctx.globalAlpha = 0.20;
-            ctx.strokeStyle = i === 1 ? amber : orange;
-            ctx.lineWidth = 0.5;
-            ctx.beginPath();
-            ctx.moveTo(joint.x, joint.y - dSize);
-            ctx.lineTo(joint.x + dSize, joint.y);
-            ctx.lineTo(joint.x, joint.y + dSize);
-            ctx.lineTo(joint.x - dSize, joint.y);
-            ctx.closePath();
-            ctx.stroke();
-
-            // Coordinate label (tiny)
-            ctx.globalAlpha = 0.16;
-            ctx.fillStyle = orange;
-            ctx.font = "6px monospace";
-            ctx.fillText(
-              `(${Math.round(joint.x)},${Math.round(joint.y)})`,
-              joint.x + dSize + 2,
-              joint.y - dSize
-            );
-          });
-
-          // Wrist endpoint glow
-          ctx.globalAlpha = 0.08;
-          const wGrad = ctx.createRadialGradient(
-            joints[2].x, joints[2].y, 0,
-            joints[2].x, joints[2].y, joints[2].r * 4
-          );
-          wGrad.addColorStop(0, orange);
-          wGrad.addColorStop(1, "transparent");
-          ctx.fillStyle = wGrad;
+          // End-effector glow
+          const glowR = 15;
+          const grad = ctx.createRadialGradient(eeX, eeY, 0, eeX, eeY, glowR);
+          grad.addColorStop(0, orange);
+          grad.addColorStop(1, "transparent");
+          ctx.globalAlpha = 0.30;
+          ctx.fillStyle = grad;
           ctx.beginPath();
-          ctx.arc(joints[2].x, joints[2].y, joints[2].r * 4, 0, Math.PI * 2);
+          ctx.arc(eeX, eeY, glowR, 0, Math.PI * 2);
           ctx.fill();
+
+          // Positioning rectangle around end-effector
+          const rectSize = 14;
+          ctx.globalAlpha = 0.20;
+          ctx.strokeStyle = amber;
+          ctx.lineWidth = 0.5;
+          ctx.strokeRect(eeX - rectSize, eeY - rectSize, rectSize * 2, rectSize * 2);
         }
 
         ctx.globalAlpha = 1;

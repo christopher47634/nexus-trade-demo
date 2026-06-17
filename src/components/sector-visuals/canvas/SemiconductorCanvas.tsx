@@ -75,7 +75,7 @@ export default function SemiconductorCanvas({
         ctx.fill();
 
         // --- Etch grid: fine lines inside wafer area ---
-        const gridSpacing = 16;
+        const gridSpacing = 12;
         ctx.globalAlpha = 0.06;
         ctx.strokeStyle = purple;
         ctx.lineWidth = 0.3;
@@ -146,9 +146,9 @@ export default function SemiconductorCanvas({
           const cellCx = cx - (cell.col + 0.5) * (gridSpacing + 2);
           const cellCy = cy - waferR * 0.5 + cell.row * (gridSpacing + 2);
 
-          // Subtle flicker: opacity oscillates slowly between 0.08 and 0.15
+          // Subtle flicker: opacity oscillates slowly between 0.08 and 0.18
           const flicker = animOn
-            ? 0.08 + 0.07 * (0.5 + 0.5 * Math.sin(t * 0.4 + cell.flickerPhase))
+            ? 0.08 + 0.10 * (0.5 + 0.5 * Math.sin(t * 0.4 + cell.flickerPhase))
             : 0.10;
 
           ctx.globalAlpha = flicker;
@@ -171,7 +171,7 @@ export default function SemiconductorCanvas({
           scanGrad.addColorStop(0.5, indigo);
           scanGrad.addColorStop(1, "transparent");
 
-          ctx.globalAlpha = 0.12;
+          ctx.globalAlpha = 0.20;
           ctx.fillStyle = scanGrad;
           ctx.fillRect(scanX - 2, cy - waferR, 4, waferR * 2);
         }

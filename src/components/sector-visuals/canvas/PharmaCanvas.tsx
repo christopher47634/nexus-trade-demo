@@ -74,7 +74,7 @@ export default function PharmaCanvas({
         const connectCycle = animOn
           ? 0.5 + 0.5 * Math.sin(t * ((2 * Math.PI) / 10))
           : 0.5;
-        const connectAlpha = isHover ? 0.18 : 0.08 + 0.06 * connectCycle;
+        const connectAlpha = isHover ? 0.22 : 0.10 + 0.10 * connectCycle;
 
         connections.forEach(([a, b]) => {
           const nodeA = nodes[a];
@@ -131,7 +131,7 @@ export default function PharmaCanvas({
         const helixFreq = 4;
 
         // Strand 1
-        ctx.globalAlpha = 0.08 * glowMul;
+        ctx.globalAlpha = 0.12 * glowMul;
         ctx.strokeStyle = rose;
         ctx.lineWidth = 0.5;
         ctx.beginPath();
@@ -144,7 +144,7 @@ export default function PharmaCanvas({
         ctx.stroke();
 
         // Strand 2 (phase-shifted)
-        ctx.globalAlpha = 0.06 * glowMul;
+        ctx.globalAlpha = 0.10 * glowMul;
         ctx.strokeStyle = violet;
         ctx.beginPath();
         for (let x = 0; x <= w; x += 2) {
@@ -170,7 +170,7 @@ export default function PharmaCanvas({
 
         // --- Heartbeat / ECG line ---
         const ecgY = h * 0.72;
-        const ecgH = h * 0.06;
+        const ecgH = h * 0.10;
         const ecgPeriod = 5; // 5s per heartbeat
         const ecgPhase = animOn ? (t % ecgPeriod) / ecgPeriod : 0;
 

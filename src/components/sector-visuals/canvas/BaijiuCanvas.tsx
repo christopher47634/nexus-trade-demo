@@ -133,11 +133,11 @@ export default function BaijiuCanvas({
         // --- Liquid wave lines ---
         const waveYBase = [h * 0.42, h * 0.55, h * 0.68];
         const waveColors = [amber, gold, amber];
-        const waveOpacities = [0.16, 0.12, 0.08];
+        const waveOpacities = [0.22, 0.18, 0.14];
         const wavePeriods = [14, 16, 12];
 
         waveYBase.forEach((baseY, i) => {
-          const amp = h * 0.015 * waveAmpMul;
+          const amp = h * 0.0225 * waveAmpMul;
           const freq = 2.5 + i * 0.5;
           const phase = t * ((2 * Math.PI) / wavePeriods[i]) + i * 0.8;
 

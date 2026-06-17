@@ -10,12 +10,15 @@ interface ComputeCanvasProps {
 }
 
 /**
- * Canvas 2D visual for 算力 (Computing Power) — REFINED
- * - Center chip outline: rectangle with pins, blue #3b82f6, opacity 0.12-0.20
- * - Background grid: very faint, purple #8b5cf6, opacity 0.06-0.12
- * - Chip breathing: 6.5s period, opacity 0.08-0.18
- * - Circuit nodes: 4-6 points with low-freq pulse
- * - Hover: local glow only, don't brighten whole card
+ * Canvas 2D visual for Compute — Prominent Chip + Data Nodes + Data Flow
+ * - Central chip: prominent outline with rounded corners, inner die, pin lines, circuit traces
+ * - Circuit paths: 3-4 L-shaped/zigzag paths radiating outward from chip
+ * - Data nodes: 4-5 small circles at circuit intersections, pulsing
+ * - Data flow: 2-3 small dots moving along circuit paths with faint trail
+ * - Background grid: very faint
+ * - Hover: chip outline brightens, data flow dot gets glow, circuit paths brighten
+ * - Colors: blue #3b82f6, purple #8b5cf6
+ * - Feel: data center, high-performance computing
  */
 export default function ComputeCanvas({
   width,
@@ -50,18 +53,18 @@ export default function ComputeCanvas({
 
         const blue = "#3b82f6";
         const purple = "#8b5cf6";
-        const spacing = 36;
+        const hoverMul = isHover ? 1.15 : 1;
 
-        // Background grid: very faint
+        // --- Background grid: very faint ---
+        const spacing = 36;
         const gridAlpha = animOn
-          ? 0.06 + 0.02 * Math.sin(t * 0.08)
-          : 0.08;
+          ? 0.04 + 0.02 * Math.sin(t * 0.08)
+          : 0.06;
 
         ctx.globalAlpha = gridAlpha;
         ctx.strokeStyle = purple;
         ctx.lineWidth = 0.5;
 
-        // Subtle grid drift
         const driftX = animOn ? (t * 1.5) % spacing : 0;
         const driftY = animOn ? (t * 1.0) % spacing : 0;
 
@@ -78,31 +81,29 @@ export default function ComputeCanvas({
           ctx.stroke();
         }
 
-        // Chip outline: centered rectangle
-        const chipMarginX = w * 0.25;
-        const chipMarginY = h * 0.18;
-        const chipX = chipMarginX;
-        const chipY = chipMarginY;
-        const chipW = w - 2 * chipMarginX;
-        const chipH = h - 2 * chipMarginY;
+        // --- Central chip: prominent outline ---
+        const chipX = w * 0.28;
+        const chipY = h * 0.22;
+        const chipW = w * 0.44;
+        const chipH = h * 0.56;
 
-        // Chip breathing: 6.5s period, opacity 0.08-0.18
+        // Chip breathing: opacity 0.14-0.24, period ~8s
         const breathAlpha = animOn
-          ? 0.13 + 0.05 * Math.sin(t * ((2 * Math.PI) / 6.5))
-          : 0.16;
+          ? 0.19 + 0.05 * Math.sin(t * ((2 * Math.PI) / 8))
+          : 0.19;
 
-        // Outer chip border
-        ctx.globalAlpha = breathAlpha;
+        // Outer chip border with rounded corners
+        ctx.globalAlpha = Math.min(breathAlpha * hoverMul, 0.34);
         ctx.strokeStyle = blue;
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.roundRect(chipX, chipY, chipW, chipH, 3);
+        ctx.roundRect(chipX, chipY, chipW, chipH, 4);
         ctx.stroke();
 
-        // Inner die
+        // Inner die: smaller rectangle
         const dieInsetX = chipW * 0.15;
         const dieInsetY = chipH * 0.15;
-        ctx.globalAlpha = breathAlpha * 0.7;
+        ctx.globalAlpha = Math.min(breathAlpha * 0.6 * hoverMul, 0.28);
         ctx.strokeStyle = purple;
         ctx.lineWidth = 0.5;
         ctx.beginPath();
@@ -115,149 +116,269 @@ export default function ComputeCanvas({
         );
         ctx.stroke();
 
-        // Core glow (subtle radial in center)
-        const coreX = w / 2;
-        const coreY = h / 2;
-        const coreR = Math.min(chipW, chipH) * 0.22;
-        const coreAlpha = animOn
-          ? 0.04 + 0.03 * Math.sin(t * ((2 * Math.PI) / 6.5))
-          : 0.05;
-        const grad = ctx.createRadialGradient(
-          coreX, coreY, 0,
-          coreX, coreY, coreR
-        );
-        grad.addColorStop(0, blue);
-        grad.addColorStop(1, "transparent");
-        ctx.globalAlpha = coreAlpha;
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.arc(coreX, coreY, coreR, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Pin lines — top/bottom edge
-        const pinPositions = [0.2, 0.35, 0.5, 0.65, 0.8];
-        const pinLength = 5;
-
-        ctx.globalAlpha = 0.14;
-        ctx.lineWidth = 0.8;
+        // Chip label area: tiny horizontal lines inside die (circuit traces)
+        const traceCount = 4;
+        ctx.globalAlpha = 0.08;
         ctx.strokeStyle = blue;
+        ctx.lineWidth = 0.5;
+        for (let i = 0; i < traceCount; i++) {
+          const ty = chipY + dieInsetY + (chipH - 2 * dieInsetY) * ((i + 1) / (traceCount + 1));
+          const tx1 = chipX + dieInsetX + 6;
+          const tx2 = chipX + chipW - dieInsetX - 6;
+          ctx.beginPath();
+          ctx.moveTo(tx1, ty);
+          ctx.lineTo(tx2, ty);
+          ctx.stroke();
+        }
 
-        pinPositions.forEach((pct) => {
+        // --- Pin lines: 3-4 short lines on each edge ---
+        const pinLength = 6;
+        ctx.globalAlpha = 0.14 * hoverMul;
+        ctx.lineWidth = 0.8;
+
+        // Top pins
+        ctx.strokeStyle = blue;
+        [0.2, 0.4, 0.6, 0.8].forEach((pct) => {
           const px = chipX + chipW * pct;
-          // Top pin
           ctx.beginPath();
           ctx.moveTo(px, chipY - pinLength);
           ctx.lineTo(px, chipY);
           ctx.stroke();
-          // Bottom pin
+        });
+
+        // Bottom pins
+        [0.2, 0.4, 0.6, 0.8].forEach((pct) => {
+          const px = chipX + chipW * pct;
           ctx.beginPath();
           ctx.moveTo(px, chipY + chipH);
           ctx.lineTo(px, chipY + chipH + pinLength);
           ctx.stroke();
         });
 
-        // Side pins
+        // Left pins
         ctx.strokeStyle = purple;
-        const sidePins = [0.25, 0.5, 0.75];
-        sidePins.forEach((pct) => {
+        [0.25, 0.5, 0.75].forEach((pct) => {
           const py = chipY + chipH * pct;
-          // Left pin
           ctx.beginPath();
           ctx.moveTo(chipX - pinLength, py);
           ctx.lineTo(chipX, py);
           ctx.stroke();
-          // Right pin
+        });
+
+        // Right pins
+        [0.25, 0.5, 0.75].forEach((pct) => {
+          const py = chipY + chipH * pct;
           ctx.beginPath();
           ctx.moveTo(chipX + chipW, py);
           ctx.lineTo(chipX + chipW + pinLength, py);
           ctx.stroke();
         });
 
-        // Circuit nodes: 5 points with low-freq pulse
-        const nodes = [
-          { x: chipX + chipW + 22, y: chipY + chipH * 0.30 },
-          { x: chipX + chipW + 28, y: chipY + chipH * 0.55 },
-          { x: chipX - 22, y: chipY + chipH * 0.35 },
-          { x: chipX - 28, y: chipY + chipH * 0.65 },
-          { x: chipX + chipW * 0.5, y: chipY - 18 },
-          { x: chipX + chipW * 0.5, y: chipY + chipH + 18 },
+        // --- Circuit paths: L-shaped/zigzag paths radiating outward ---
+        // Define circuit paths as arrays of [x, y] waypoints
+        const circuitPaths = [
+          // Right path 1: chip right → right → down → right
+          [
+            [chipX + chipW + pinLength, chipY + chipH * 0.30],
+            [chipX + chipW + 30, chipY + chipH * 0.30],
+            [chipX + chipW + 30, chipY + chipH * 0.50],
+            [chipX + chipW + 55, chipY + chipH * 0.50],
+          ],
+          // Right path 2: chip right → right → up → right
+          [
+            [chipX + chipW + pinLength, chipY + chipH * 0.65],
+            [chipX + chipW + 25, chipY + chipH * 0.65],
+            [chipX + chipW + 25, chipY + chipH * 0.45],
+            [chipX + chipW + 50, chipY + chipH * 0.45],
+          ],
+          // Left path 1: chip left → left → down → left
+          [
+            [chipX - pinLength, chipY + chipH * 0.35],
+            [chipX - 28, chipY + chipH * 0.35],
+            [chipX - 28, chipY + chipH * 0.55],
+            [chipX - 52, chipY + chipH * 0.55],
+          ],
+          // Top path: chip top → up → right
+          [
+            [chipX + chipW * 0.5, chipY - pinLength],
+            [chipX + chipW * 0.5, chipY - 22],
+            [chipX + chipW * 0.65, chipY - 22],
+            [chipX + chipW * 0.65, chipY - 40],
+          ],
+          // Bottom path: chip bottom → down → left
+          [
+            [chipX + chipW * 0.5, chipY + chipH + pinLength],
+            [chipX + chipW * 0.5, chipY + chipH + 22],
+            [chipX + chipW * 0.35, chipY + chipH + 22],
+            [chipX + chipW * 0.35, chipY + chipH + 40],
+          ],
         ];
 
-        const nodePulsePeriod = 10; // slow pulse
-        nodes.forEach((node, i) => {
-          const phase = (i / nodes.length) * Math.PI * 2;
-          const pulse = animOn
-            ? 0.08 + 0.05 * Math.sin(t * ((2 * Math.PI) / nodePulsePeriod) + phase)
-            : 0.10;
-
+        ctx.lineWidth = 0.6;
+        circuitPaths.forEach((path) => {
+          ctx.globalAlpha = 0.10 * hoverMul;
+          ctx.strokeStyle = blue;
           ctx.beginPath();
-          ctx.arc(node.x, node.y, 2, 0, Math.PI * 2);
-          ctx.fillStyle = i % 2 === 0 ? blue : purple;
-          ctx.globalAlpha = pulse;
+          if (path.length > 0) {
+            ctx.moveTo(path[0][0], path[0][1]);
+            for (let i = 1; i < path.length; i++) {
+              ctx.lineTo(path[i][0], path[i][1]);
+            }
+          }
+          ctx.stroke();
+        });
+
+        // --- Data nodes: small circles at circuit intersections ---
+        const dataNodes = [
+          { x: chipX + chipW + 30, y: chipY + chipH * 0.50, radius: 3.5, phase: 0 },
+          { x: chipX + chipW + 25, y: chipY + chipH * 0.45, radius: 3, phase: 1.2 },
+          { x: chipX - 28, y: chipY + chipH * 0.55, radius: 4, phase: 2.4 },
+          { x: chipX + chipW * 0.5, y: chipY - 22, radius: 3.5, phase: 3.6 },
+          { x: chipX + chipW * 0.35, y: chipY + chipH + 22, radius: 3, phase: 4.8 },
+        ];
+
+        dataNodes.forEach((node) => {
+          // Pulse: opacity oscillates 0.10→0.28→0.10, period 6-10s
+          const nodePulse = animOn
+            ? 0.19 + 0.09 * Math.sin(t * ((2 * Math.PI) / 8) + node.phase)
+            : 0.19;
+
+          ctx.globalAlpha = nodePulse;
+          ctx.fillStyle = blue;
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Outer ring
+          ctx.globalAlpha = nodePulse * 0.7;
+          ctx.strokeStyle = purple;
+          ctx.lineWidth = 0.5;
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, node.radius + 2, 0, Math.PI * 2);
+          ctx.stroke();
+        });
+
+        // --- Data flow: dots moving along circuit paths ---
+        // Each dot moves along a circuit path, period 8-14s
+        const flowDots = [
+          { pathIdx: 0, period: 10, radius: 2 },
+          { pathIdx: 2, period: 12, radius: 1.5 },
+          { pathIdx: 3, period: 14, radius: 2 },
+        ];
+
+        flowDots.forEach((dot, di) => {
+          const path = circuitPaths[dot.pathIdx];
+          if (path.length < 2) return;
+
+          // Calculate total path length
+          let totalLen = 0;
+          const segLens: number[] = [];
+          for (let i = 1; i < path.length; i++) {
+            const dx = path[i][0] - path[i - 1][0];
+            const dy = path[i][1] - path[i - 1][1];
+            const len = Math.sqrt(dx * dx + dy * dy);
+            segLens.push(len);
+            totalLen += len;
+          }
+
+          // Position along path: ping-pong
+          const progress = animOn
+            ? (Math.sin(t * ((2 * Math.PI) / dot.period) + di * 2) + 1) / 2
+            : 0.5;
+
+          const dist = progress * totalLen;
+          let cumDist = 0;
+          let dotX = path[0][0];
+          let dotY = path[0][1];
+
+          for (let i = 0; i < segLens.length; i++) {
+            if (cumDist + segLens[i] >= dist) {
+              const segProgress = (dist - cumDist) / segLens[i];
+              dotX = path[i][0] + (path[i + 1][0] - path[i][0]) * segProgress;
+              dotY = path[i][1] + (path[i + 1][1] - path[i][1]) * segProgress;
+              break;
+            }
+            cumDist += segLens[i];
+            if (i === segLens.length - 1) {
+              dotX = path[path.length - 1][0];
+              dotY = path[path.length - 1][1];
+            }
+          }
+
+          // Faint trail: previous positions
+          for (let tr = 3; tr > 0; tr--) {
+            const trailProgress = animOn
+              ? (Math.sin((t - tr * 0.3) * ((2 * Math.PI) / dot.period) + di * 2) + 1) / 2
+              : 0.5;
+            const trailDist = trailProgress * totalLen;
+            let tCumDist = 0;
+            let tx = path[0][0];
+            let ty = path[0][1];
+
+            for (let i = 0; i < segLens.length; i++) {
+              if (tCumDist + segLens[i] >= trailDist) {
+                const sp = (trailDist - tCumDist) / segLens[i];
+                tx = path[i][0] + (path[i + 1][0] - path[i][0]) * sp;
+                ty = path[i][1] + (path[i + 1][1] - path[i][1]) * sp;
+                break;
+              }
+              tCumDist += segLens[i];
+              if (i === segLens.length - 1) {
+                tx = path[path.length - 1][0];
+                ty = path[path.length - 1][1];
+              }
+            }
+
+            ctx.globalAlpha = 0.06 / tr;
+            ctx.fillStyle = blue;
+            ctx.beginPath();
+            ctx.arc(tx, ty, dot.radius * 0.5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          // Main dot
+          const dotAlpha = animOn
+            ? 0.18 + 0.06 * Math.sin(t * ((2 * Math.PI) / (dot.period * 0.5)))
+            : 0.22;
+          ctx.globalAlpha = Math.min(dotAlpha, 0.30);
+          ctx.fillStyle = blue;
+          ctx.beginPath();
+          ctx.arc(dotX, dotY, dot.radius, 0, Math.PI * 2);
           ctx.fill();
         });
 
-        // Circuit traces connecting nodes to chip pins
-        ctx.lineWidth = 0.6;
-        ctx.globalAlpha = 0.10;
-        ctx.strokeStyle = blue;
-
-        // Right trace 1
-        ctx.beginPath();
-        ctx.moveTo(chipX + chipW + pinLength, chipY + chipH * 0.30);
-        ctx.lineTo(nodes[0].x, nodes[0].y);
-        ctx.stroke();
-
-        // Right trace 2
-        ctx.strokeStyle = purple;
-        ctx.beginPath();
-        ctx.moveTo(chipX + chipW + pinLength, chipY + chipH * 0.55);
-        ctx.lineTo(nodes[1].x, nodes[1].y);
-        ctx.stroke();
-
-        // Left trace 1
-        ctx.strokeStyle = blue;
-        ctx.beginPath();
-        ctx.moveTo(chipX - pinLength, chipY + chipH * 0.35);
-        ctx.lineTo(nodes[2].x, nodes[2].y);
-        ctx.stroke();
-
-        // Left trace 2
-        ctx.strokeStyle = purple;
-        ctx.beginPath();
-        ctx.moveTo(chipX - pinLength, chipY + chipH * 0.65);
-        ctx.lineTo(nodes[3].x, nodes[3].y);
-        ctx.stroke();
-
-        // Top trace
-        ctx.strokeStyle = blue;
-        ctx.globalAlpha = 0.08;
-        ctx.beginPath();
-        ctx.moveTo(chipX + chipW * 0.5, chipY - pinLength);
-        ctx.lineTo(nodes[4].x, nodes[4].y);
-        ctx.stroke();
-
-        // Bottom trace
-        ctx.strokeStyle = purple;
-        ctx.beginPath();
-        ctx.moveTo(chipX + chipW * 0.5, chipY + chipH + pinLength);
-        ctx.lineTo(nodes[5].x, nodes[5].y);
-        ctx.stroke();
-
-        // Hover: local glow around chip only
-        if (isHover && animOn) {
-          const glowR = Math.max(chipW, chipH) * 0.6;
-          const hoverGrad = ctx.createRadialGradient(
-            coreX, coreY, 0,
-            coreX, coreY, glowR
+        // --- Hover: chip outline brightens, one flow dot gets glow ---
+        if (isHover) {
+          // Chip outline glow
+          const glowR = Math.max(chipW, chipH) * 0.5;
+          const grad = ctx.createRadialGradient(
+            w / 2, h / 2, 0,
+            w / 2, h / 2, glowR
           );
-          hoverGrad.addColorStop(0, blue);
-          hoverGrad.addColorStop(1, "transparent");
-          ctx.globalAlpha = 0.06;
-          ctx.fillStyle = hoverGrad;
+          grad.addColorStop(0, blue);
+          grad.addColorStop(1, "transparent");
+          ctx.globalAlpha = 0.08;
+          ctx.fillStyle = grad;
           ctx.beginPath();
-          ctx.arc(coreX, coreY, glowR, 0, Math.PI * 2);
+          ctx.arc(w / 2, h / 2, glowR, 0, Math.PI * 2);
           ctx.fill();
+
+          // Glow around first data flow dot
+          if (flowDots.length > 0) {
+            const glowPath = circuitPaths[flowDots[0].pathIdx];
+            if (glowPath.length >= 2) {
+              const gx = (glowPath[0][0] + glowPath[glowPath.length - 1][0]) / 2;
+              const gy = (glowPath[0][1] + glowPath[glowPath.length - 1][1]) / 2;
+              const gGrad = ctx.createRadialGradient(gx, gy, 0, gx, gy, 10);
+              gGrad.addColorStop(0, blue);
+              gGrad.addColorStop(1, "transparent");
+              ctx.globalAlpha = 0.22;
+              ctx.fillStyle = gGrad;
+              ctx.beginPath();
+              ctx.arc(gx, gy, 10, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
         }
 
         ctx.globalAlpha = 1;
