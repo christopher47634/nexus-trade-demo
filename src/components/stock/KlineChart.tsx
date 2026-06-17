@@ -307,7 +307,7 @@ export default function KlineChart({ data }: KlineChartProps) {
   return (
     <div className="w-full">
       {/* Timeframe tabs + chart type switcher + volume toggle */}
-      <div className="flex items-center gap-2 mb-3 flex-wrap">
+      <div data-demo-highlight="chart-type-switcher" className="flex items-center gap-2 mb-3 flex-wrap">
         {/* Timeframe tabs */}
         <div className="flex items-center gap-1">
           {tabs.map((tab) => (

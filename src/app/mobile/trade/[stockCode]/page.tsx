@@ -7,6 +7,7 @@ import MobileShell from "@/components/layout/MobileShell";
 import { getStockByCode } from "@/mock/stocks";
 import { createOrder, updateOrderStatus, type MockOrder } from "@/mock/orders";
 import { cn, formatPercent } from "@/lib/utils";
+import ErrorState from "@/components/common/ErrorState";
 import {
   ArrowLeft,
   Minus,
@@ -37,8 +38,12 @@ export default function MobileTradePage() {
   if (!stock) {
     return (
       <MobileShell hideTabs>
-        <div className="flex items-center justify-center h-screen">
-          <span className="text-[var(--text-muted)]">股票未找到</span>
+        <div className="flex items-center justify-center h-screen p-4">
+          <ErrorState
+            title="未找到该股票"
+            description="请检查股票代码是否正确"
+            onRetry={() => router.push("/mobile")}
+          />
         </div>
       </MobileShell>
     );

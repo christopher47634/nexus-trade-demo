@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Stock } from "@/mock/stocks";
 import { createOrder, updateOrderStatus, type MockOrder } from "@/mock/orders";
-import { X, Minus, Plus, Check, Loader2 } from "lucide-react";
+import { X, Minus, Plus, Check, Loader2, ClipboardList } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 type TradeSide = "buy" | "sell";
 type OrderStep = "input" | "submitted" | "matching" | "filled";
@@ -19,6 +20,7 @@ interface TradePanelProps {
 const AVAILABLE_FUNDS = 1000000;
 
 export default function TradePanel({ stock, side: initialSide = "buy", onClose }: TradePanelProps) {
+  const router = useRouter();
   const [side, setSide] = useState<TradeSide>(initialSide);
   const [price, setPrice] = useState(stock.price.toFixed(2));
   const [quantity, setQuantity] = useState(100);
@@ -128,6 +130,7 @@ export default function TradePanel({ stock, side: initialSide = "buy", onClose }
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
+                data-demo-highlight="trade-inputs"
                 className="p-4 space-y-4"
               >
                 {/* Buy/Sell tabs */}
@@ -300,6 +303,7 @@ export default function TradePanel({ stock, side: initialSide = "buy", onClose }
                   whileTap={{ scale: 0.98 }}
                   onClick={handleSubmit}
                   disabled={quantity <= 0 || priceNum <= 0}
+                  data-demo-highlight="confirm-buy"
                   className={cn(
                     "w-full py-3 rounded-xl text-sm font-semibold transition-all duration-200",
                     side === "buy"
@@ -448,6 +452,14 @@ export default function TradePanel({ stock, side: initialSide = "buy", onClose }
                       className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-[var(--surface-2)] text-[var(--text-secondary)] hover:bg-[var(--surface-3)] transition-colors"
                     >
                       继续下单
+                    </button>
+                    <button
+                      onClick={() => { onClose(); router.push("/orders"); }}
+                      data-demo-highlight="view-orders"
+                      className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-[var(--surface-2)] text-[var(--text-secondary)] hover:bg-[var(--surface-3)] transition-colors flex items-center justify-center gap-1.5"
+                    >
+                      <ClipboardList size={14} />
+                      查看订单
                     </button>
                     <button
                       onClick={onClose}

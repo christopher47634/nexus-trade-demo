@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import SectorHeroArtwork from "@/components/sector/SectorHeroArtwork";
 import HeroKpiCard from "@/components/sector/HeroKpiCard";
+import ErrorState from "@/components/common/ErrorState";
 
 const iconMap: Record<string, React.ElementType> = {
   Zap,
@@ -83,8 +84,12 @@ export default function MobileSectorDetailPage() {
   if (!sector) {
     return (
       <MobileShell>
-        <div className="flex items-center justify-center h-screen">
-          <span className="text-[var(--text-muted)]">板块未找到</span>
+        <div className="flex items-center justify-center h-screen p-4">
+          <ErrorState
+            title="未找到该板块"
+            description="请检查板块地址是否正确"
+            onRetry={() => router.push("/mobile")}
+          />
         </div>
       </MobileShell>
     );

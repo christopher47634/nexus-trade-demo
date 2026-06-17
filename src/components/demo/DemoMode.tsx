@@ -19,6 +19,7 @@ interface DemoContextValue {
   startDemo: () => void;
   stopDemo: () => void;
   nextStep: () => void;
+  setStep: (step: number) => void;
 }
 
 const DemoContext = createContext<DemoContextValue>({
@@ -27,6 +28,7 @@ const DemoContext = createContext<DemoContextValue>({
   startDemo: () => {},
   stopDemo: () => {},
   nextStep: () => {},
+  setStep: () => {},
 });
 
 export function useDemo() {
@@ -35,15 +37,15 @@ export function useDemo() {
 
 /* ──────────────────────── Demo Steps Data ────────────────────── */
 
-const demoSteps = [
+export const demoSteps = [
   "首页浏览热门板块",
   "点击「光通信」板块",
-  "查看板块详情",
-  "点击「中际旭创 (300308)」",
-  "查看股票详情",
+  "查看板块详情 · 点击股票",
   "切换图表类型",
   "点击「买入」按钮",
-  "提交交易 · 查看成交通知",
+  "调整交易参数",
+  "确认买入 · 查看成交通知",
+  "查看委托订单",
 ];
 
 /* ──────────────────────── Provider ───────────────────────────── */
@@ -57,7 +59,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     const stored = localStorage.getItem("demoMode");
     if (stored === "true") {
       setDemoMode(true);
-      const step = parseInt(localStorage.getItem("demoStep") || "0", 10);
+      const step = parseInt(localStorage.getItem("demoModeStep") || "0", 10);
       setCurrentStep(step);
     }
   }, []);
@@ -68,7 +70,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   }, [demoMode]);
 
   useEffect(() => {
-    localStorage.setItem("demoStep", String(currentStep));
+    localStorage.setItem("demoModeStep", String(currentStep));
   }, [currentStep]);
 
   const startDemo = useCallback(() => {
@@ -80,7 +82,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     setDemoMode(false);
     setCurrentStep(0);
     localStorage.removeItem("demoMode");
-    localStorage.removeItem("demoStep");
+    localStorage.removeItem("demoModeStep");
   }, []);
 
   const nextStep = useCallback(() => {
@@ -89,16 +91,20 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         // Last step — exit demo
         setDemoMode(false);
         localStorage.removeItem("demoMode");
-        localStorage.removeItem("demoStep");
+        localStorage.removeItem("demoModeStep");
         return 0;
       }
       return prev + 1;
     });
   }, []);
 
+  const setStep = useCallback((step: number) => {
+    setCurrentStep(step);
+  }, []);
+
   return (
     <DemoContext.Provider
-      value={{ demoMode, currentStep, startDemo, stopDemo, nextStep }}
+      value={{ demoMode, currentStep, startDemo, stopDemo, nextStep, setStep }}
     >
       {children}
     </DemoContext.Provider>

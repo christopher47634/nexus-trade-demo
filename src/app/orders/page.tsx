@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ClipboardList } from "lucide-react";
+import { ClipboardList, BarChart3, PlayCircle } from "lucide-react";
 import { getOrders, MockOrder } from "@/mock/orders";
 import EmptyState from "@/components/common/EmptyState";
 
@@ -27,11 +28,22 @@ function relativeTime(ts: number): string {
 }
 
 export default function OrdersPage() {
+  const router = useRouter();
   const [orders, setOrders] = useState<MockOrder[]>([]);
 
   useEffect(() => {
     setOrders(getOrders());
   }, []);
+
+  const handleStartDemo = () => {
+    try {
+      localStorage.setItem("demoMode", "true");
+      localStorage.setItem("demoModeStep", "0");
+    } catch {
+      // ignore
+    }
+    router.push("/");
+  };
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
@@ -49,16 +61,40 @@ export default function OrdersPage() {
       </motion.div>
 
       {orders.length === 0 ? (
-        <EmptyState
-          icon={<ClipboardList size={40} />}
-          title="暂无委托订单"
-          description="下单后将在此显示委托记录"
-        />
+        <div className="space-y-4">
+          <EmptyState
+            icon={<ClipboardList size={40} />}
+            title="暂无委托订单"
+            description="下单后将在此显示委托记录"
+          />
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            className="flex items-center justify-center gap-3"
+          >
+            <button
+              onClick={() => router.push("/")}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium bg-[var(--surface-2)] text-[var(--text-secondary)] hover:bg-[var(--surface-3)] transition-colors"
+            >
+              <BarChart3 size={15} />
+              返回市场
+            </button>
+            <button
+              onClick={handleStartDemo}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium bg-[var(--accent-soft)] text-[var(--accent)] border border-[var(--accent)] hover:bg-[var(--accent)] hover:text-[var(--bg-primary)] transition-colors"
+            >
+              <PlayCircle size={15} />
+              开始演示
+            </button>
+          </motion.div>
+        </div>
       ) : (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
+          data-demo-highlight="order-table"
           className="glass overflow-hidden rounded-xl"
         >
           {/* Table Header */}

@@ -10,6 +10,7 @@ import TradePanel from "@/components/stock/TradePanel";
 import { getStockByCode } from "@/mock/stocks";
 import { getKlineData } from "@/mock/kline";
 import { cn, formatPercent } from "@/lib/utils";
+import ErrorState from "@/components/common/ErrorState";
 import {
   ArrowLeft,
   TrendingUp,
@@ -32,8 +33,12 @@ export default function StockDetailPage() {
   if (!stock) {
     return (
       <DesktopShell>
-        <div className="flex items-center justify-center h-screen">
-          <span className="text-[var(--text-muted)]">股票未找到</span>
+        <div className="flex items-center justify-center h-screen p-6">
+          <ErrorState
+            title="未找到该股票"
+            description="请检查股票代码是否正确"
+            onRetry={() => router.push("/")}
+          />
         </div>
       </DesktopShell>
     );
@@ -131,6 +136,7 @@ export default function StockDetailPage() {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={handleBuy}
+                data-demo-highlight="buy-button"
                 className="px-6 py-2.5 rounded-xl text-sm font-semibold bg-[var(--up)] text-[var(--bg-primary)] hover:shadow-[0_0_24px_rgba(52,211,153,0.3)] transition-shadow"
               >
                 买入

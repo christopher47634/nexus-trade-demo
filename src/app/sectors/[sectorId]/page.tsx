@@ -30,6 +30,8 @@ import {
 } from "lucide-react";
 import SectorHeroArtwork from "@/components/sector/SectorHeroArtwork";
 import HeroKpiCard from "@/components/sector/HeroKpiCard";
+import EmptyState from "@/components/common/EmptyState";
+import ErrorState from "@/components/common/ErrorState";
 
 const iconMap: Record<string, React.ElementType> = {
   Zap,
@@ -103,8 +105,12 @@ export default function SectorDetailPage() {
   if (!sector) {
     return (
       <DesktopShell>
-        <div className="flex items-center justify-center h-screen">
-          <span className="text-[var(--text-muted)]">板块未找到</span>
+        <div className="flex items-center justify-center h-screen p-6">
+          <ErrorState
+            title="未找到该板块"
+            description="请检查板块地址是否正确"
+            onRetry={() => router.push("/")}
+          />
         </div>
       </DesktopShell>
     );
@@ -242,7 +248,10 @@ export default function SectorDetailPage() {
 
         {/* Sector trend chart */}
         <SectorTrendChart data={trendData} color={sector.accentColor} />
-
+        {sectorStocks.length === 0 ? (
+          <EmptyState title="暂无成分股数据" description="该板块暂无成分股信息" />
+        ) : (
+        <>
         {/* Sort controls */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -297,6 +306,7 @@ export default function SectorDetailPage() {
                     delay: i * 0.02,
                   }}
                   onClick={() => router.push(`/stocks/${stock.code}`)}
+                  data-demo-highlight={i === 0 ? "first-stock" : undefined}
                   className="flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-[var(--surface-1)] transition-colors cursor-pointer group"
                 >
                   <span
@@ -349,6 +359,8 @@ export default function SectorDetailPage() {
             })}
           </AnimatePresence>
         </div>
+        </>
+        )}
       </div>
     </DesktopShell>
   );

@@ -1,77 +1,284 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useDemo } from "./DemoMode";
+import { usePathname, useRouter } from "next/navigation";
+import { useDemo, demoSteps } from "./DemoMode";
 
-/* ─────────────────── Demo Highlight Badge ────────────────────── */
+/* ─────────────────── Step Configuration ─────────────────────── */
 
-interface HighlightTarget {
+interface StepConfig {
+  /** CSS selector for the element to highlight */
   selector: string;
-  label: string;
-  step: number;
+  /** Badge label text */
+  badge: string;
+  /** Route pattern this step applies to (startsWith match) */
+  route: string;
+  /** Optional: after which step to auto-advance (for click-driven steps) */
+  advanceOn?: "click" | "delay";
+  /** For delay-based advance, milliseconds to wait */
+  delayMs?: number;
+  /** Navigation target when advancing from this step */
+  navigateTo?: string;
 }
 
-const highlights: HighlightTarget[] = [
+const stepConfigs: StepConfig[] = [
+  // Step 0: Homepage — highlight 光通信 card
   {
     selector: '[data-demo-highlight="optical-communication"]',
-    label: "推荐点击",
-    step: 0,
+    badge: "推荐点击",
+    route: "/",
+    advanceOn: "click",
+    navigateTo: "/sectors/optical-communication",
+  },
+  // Step 1: Sector page — highlight first stock row
+  {
+    selector: '[data-demo-highlight="first-stock"]',
+    badge: "下一步",
+    route: "/sectors/",
+    advanceOn: "click",
+    navigateTo: "/stocks/300308",
+  },
+  // Step 2: Stock page — highlight chart type switcher
+  {
+    selector: '[data-demo-highlight="chart-type-switcher"]',
+    badge: "切换图表类型",
+    route: "/stocks/",
+    advanceOn: "click",
+  },
+  // Step 3: Stock page — highlight buy button
+  {
+    selector: '[data-demo-highlight="buy-button"]',
+    badge: "模拟交易入口",
+    route: "/stocks/",
+    advanceOn: "click",
+  },
+  // Step 4: TradePanel — highlight price/quantity inputs
+  {
+    selector: '[data-demo-highlight="trade-inputs"]',
+    badge: "调整参数",
+    route: "/stocks/",
+    advanceOn: "delay",
+    delayMs: 2500,
+  },
+  // Step 5: TradePanel — highlight confirm buy button
+  {
+    selector: '[data-demo-highlight="confirm-buy"]',
+    badge: "提交交易",
+    route: "/stocks/",
+    advanceOn: "click",
+  },
+  // Step 6: TradePanel — highlight view orders button
+  {
+    selector: '[data-demo-highlight="view-orders"]',
+    badge: "查看成交记录",
+    route: "/stocks/",
+    advanceOn: "click",
+    navigateTo: "/orders",
+  },
+  // Step 7: Orders page — highlight order table
+  {
+    selector: '[data-demo-highlight="order-table"]',
+    badge: "演示完成 ✓",
+    route: "/orders",
+    advanceOn: "delay",
+    delayMs: 3000,
   },
 ];
 
-function DemoBadge({ label }: { label: string }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.8, y: -4 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.8 }}
-      transition={{ duration: 0.25, ease: "easeOut" }}
-      className="absolute -top-2 -right-2 z-50 pointer-events-none"
-    >
-      <div
-        className="px-2 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap"
-        style={{
-          background: "linear-gradient(135deg, #D4A574 0%, #c4956a 100%)",
-          color: "#0a0f1a",
-          boxShadow: "0 2px 8px rgba(212,165,116,0.4)",
-          animation: "demoPulse 2s ease-in-out infinite",
-        }}
-      >
-        {label}
-      </div>
-    </motion.div>
-  );
+/* ─────────────────── CSS injection (once) ───────────────────── */
+
+let styleInjected = false;
+function injectDemoStyles() {
+  if (styleInjected || typeof document === "undefined") return;
+  styleInjected = true;
+  const style = document.createElement("style");
+  style.textContent = `
+    @keyframes demoPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    @keyframes demoBadgeBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-2px); }
+    }
+    [data-demo-active="true"] {
+      position: relative;
+      z-index: 85;
+    }
+  `;
+  document.head.appendChild(style);
 }
 
-/* ───────────────────── DemoGuide Component ───────────────────── */
+/* ─────────────────── DemoGuide Component ────────────────────── */
 
 export default function DemoGuide() {
   const { demoMode, currentStep, nextStep } = useDemo();
-  const [activeHighlights, setActiveHighlights] = useState<string[]>([]);
+  const pathname = usePathname();
+  const router = useRouter();
+  const cleanupRef = useRef<(() => void) | null>(null);
+  const delayTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const observerRef = useRef<MutationObserver | null>(null);
 
-  // Find which elements to highlight based on current step
-  const checkHighlights = useCallback(() => {
-    if (!demoMode) {
-      setActiveHighlights([]);
-      return;
+  // Inject CSS once
+  useEffect(() => {
+    injectDemoStyles();
+  }, []);
+
+  /** Determine if current route matches the step's expected route */
+  const routeMatches = useCallback(
+    (stepRoute: string) => {
+      if (stepRoute === "/") return pathname === "/";
+      return pathname.startsWith(stepRoute);
+    },
+    [pathname]
+  );
+
+  /** Core highlight + interaction logic */
+  const applyHighlight = useCallback(() => {
+    // Clean up previous highlight
+    if (cleanupRef.current) {
+      cleanupRef.current();
+      cleanupRef.current = null;
+    }
+    if (delayTimerRef.current) {
+      clearTimeout(delayTimerRef.current);
+      delayTimerRef.current = null;
     }
 
-    const matching = highlights
-      .filter((h) => h.step === currentStep)
-      .map((h) => h.selector)
-      .filter((selector) => document.querySelector(selector));
+    if (!demoMode) return;
 
-    setActiveHighlights(matching);
-  }, [demoMode, currentStep]);
+    const config = stepConfigs[currentStep];
+    if (!config) return;
 
-  // Observe DOM for highlighted elements
+    // If not on the right route, don't highlight (DemoGuide just shows the step indicator)
+    if (!routeMatches(config.route)) return;
+
+    const el = document.querySelector(config.selector) as HTMLElement | null;
+    if (!el) return;
+
+    // Save original styles
+    const origBoxShadow = el.style.boxShadow;
+    const origBorder = el.style.border;
+    const origPosition = el.style.position;
+    const origZIndex = el.style.zIndex;
+
+    // Apply gold highlight
+    el.style.boxShadow =
+      "0 0 0 2px rgba(212,165,116,0.7), 0 0 24px rgba(212,165,116,0.2)";
+    el.style.border = "2px solid rgba(212,165,116,0.7)";
+    el.style.transition = "box-shadow 0.3s ease, border-color 0.3s ease";
+    el.style.position = origPosition || "relative";
+    el.style.zIndex = "85";
+    el.setAttribute("data-demo-active", "true");
+
+    // Create badge
+    const badge = document.createElement("div");
+    badge.id = "demo-guide-badge";
+    badge.style.cssText =
+      "position:absolute;top:-10px;right:-10px;z-index:90;pointer-events:none;";
+    badge.innerHTML = `<div style="
+      background: linear-gradient(135deg, #D4A574 0%, #c4956a 100%);
+      color: #0a0f1a;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+      box-shadow: 0 2px 10px rgba(212,165,116,0.5);
+      animation: demoBadgeBounce 1.5s ease-in-out infinite;
+    ">${config.badge}</div>`;
+    el.appendChild(badge);
+
+    // Scroll element into view
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+
+    // Cleanup function
+    const cleanup = () => {
+      el.style.boxShadow = origBoxShadow;
+      el.style.border = origBorder;
+      el.style.position = origPosition;
+      el.style.zIndex = origZIndex;
+      el.removeAttribute("data-demo-active");
+      const b = document.getElementById("demo-guide-badge");
+      if (b) b.remove();
+      el.removeEventListener("click", handleClick);
+    };
+
+    // Click handler
+    const handleClick = () => {
+      cleanup();
+      cleanupRef.current = null;
+
+      // Navigate if needed
+      if (config.navigateTo) {
+        router.push(config.navigateTo);
+        // Advance step after a brief delay to let navigation start
+        setTimeout(() => nextStep(), 100);
+      } else {
+        nextStep();
+      }
+    };
+
+    if (config.advanceOn === "click") {
+      el.addEventListener("click", handleClick);
+    } else if (config.advanceOn === "delay") {
+      delayTimerRef.current = setTimeout(() => {
+        cleanup();
+        cleanupRef.current = null;
+        if (config.navigateTo) {
+          router.push(config.navigateTo);
+          setTimeout(() => nextStep(), 100);
+        } else {
+          nextStep();
+        }
+      }, config.delayMs || 2000);
+    }
+
+    cleanupRef.current = cleanup;
+  }, [demoMode, currentStep, routeMatches, nextStep, router]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Run highlight on step change and route change
   useEffect(() => {
-    checkHighlights();
+    // Small delay to let the page render
+    const timer = setTimeout(applyHighlight, 300);
+    return () => clearTimeout(timer);
+  }, [applyHighlight, pathname]);
 
-    // Re-check when DOM changes (e.g., navigating to homepage)
+  // MutationObserver to re-apply highlight when DOM changes (e.g., element appears after mount)
+  useEffect(() => {
+    if (!demoMode) return;
+
+    const config = stepConfigs[currentStep];
+    if (!config || !routeMatches(config.route)) return;
+
+    // Disconnect previous observer
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
+
+    let retryCount = 0;
+    const maxRetries = 50; // ~5 seconds at 100ms intervals
+
+    const tryHighlight = () => {
+      const el = document.querySelector(config.selector);
+      if (el) {
+        applyHighlight();
+      } else if (retryCount < maxRetries) {
+        retryCount++;
+        setTimeout(tryHighlight, 100);
+      }
+    };
+
+    // Initial attempt
+    tryHighlight();
+
+    // Watch for DOM mutations
     const observer = new MutationObserver(() => {
-      checkHighlights();
+      const el = document.querySelector(config.selector);
+      if (el && !cleanupRef.current) {
+        applyHighlight();
+      }
     });
 
     observer.observe(document.body, {
@@ -79,72 +286,47 @@ export default function DemoGuide() {
       subtree: true,
     });
 
-    return () => observer.disconnect();
-  }, [checkHighlights]);
-
-  // Listen for clicks on highlighted elements
-  useEffect(() => {
-    if (!demoMode || activeHighlights.length === 0) return;
-
-    const handleClick = (e: Event) => {
-      const target = e.currentTarget as HTMLElement;
-      const highlightAttr = target.getAttribute("data-demo-highlight");
-      if (highlightAttr) {
-        // Remove highlight styling
-        target.style.removeProperty("box-shadow");
-        target.style.removeProperty("border");
-
-        // Advance to next step
-        nextStep();
-      }
-    };
-
-    const cleanupFns: (() => void)[] = [];
-
-    activeHighlights.forEach((selector) => {
-      const el = document.querySelector(selector);
-      if (!el) return;
-
-      const highlightId =
-        (el as HTMLElement).getAttribute("data-demo-highlight") || "unknown";
-
-      // Apply highlight styling
-      (el as HTMLElement).style.boxShadow =
-        "0 0 0 2px rgba(212,165,116,0.6), 0 0 20px rgba(212,165,116,0.15)";
-      (el as HTMLElement).style.border = "1px solid rgba(212,165,116,0.5)";
-      (el as HTMLElement).style.transition =
-        "box-shadow 0.3s ease, border-color 0.3s ease";
-      (el as HTMLElement).style.position = "relative";
-
-      // Inject badge
-      const badgeContainer = document.createElement("div");
-      badgeContainer.id = `demo-badge-${highlightId}`;
-      badgeContainer.style.cssText =
-        "position:absolute;top:-8px;right:-8px;z-index:50;pointer-events:none;";
-      el.appendChild(badgeContainer);
-
-      // Use React to render the badge into the container
-      import("react-dom/client").then(({ createRoot }) => {
-        const root = createRoot(badgeContainer);
-        root.render(<DemoBadge label="推荐点击" />);
-      });
-
-      el.addEventListener("click", handleClick);
-      cleanupFns.push(() => {
-        el.removeEventListener("click", handleClick);
-        (el as HTMLElement).style.removeProperty("box-shadow");
-        (el as HTMLElement).style.removeProperty("border");
-        const badge = document.getElementById(`demo-badge-${highlightId}`);
-        if (badge) badge.remove();
-      });
-    });
+    observerRef.current = observer;
 
     return () => {
-      cleanupFns.forEach((fn) => fn());
+      observer.disconnect();
+      observerRef.current = null;
     };
-  }, [demoMode, activeHighlights, nextStep]);
+  }, [demoMode, currentStep, pathname, routeMatches, applyHighlight]);
 
-  // Show step indicator when demo is active
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (cleanupRef.current) {
+        cleanupRef.current();
+        cleanupRef.current = null;
+      }
+      if (delayTimerRef.current) {
+        clearTimeout(delayTimerRef.current);
+        delayTimerRef.current = null;
+      }
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+        observerRef.current = null;
+      }
+    };
+  }, []);
+
+  // Clean up highlight when demo is turned off
+  useEffect(() => {
+    if (!demoMode) {
+      if (cleanupRef.current) {
+        cleanupRef.current();
+        cleanupRef.current = null;
+      }
+      if (delayTimerRef.current) {
+        clearTimeout(delayTimerRef.current);
+        delayTimerRef.current = null;
+      }
+    }
+  }, [demoMode]);
+
+  // Step indicator bar
   return (
     <AnimatePresence>
       {demoMode && (
@@ -183,7 +365,10 @@ export default function DemoGuide() {
                 color: "#D4A574",
               }}
             >
-              {currentStep + 1}/8
+              {currentStep + 1}/{demoSteps.length}
+            </span>
+            <span className="text-[11px] text-[var(--text-muted)]">
+              {demoSteps[currentStep]}
             </span>
           </div>
         </motion.div>
