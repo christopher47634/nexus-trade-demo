@@ -8,10 +8,12 @@ import { getOrders, MockOrder } from "@/mock/orders";
 import EmptyState from "@/components/common/EmptyState";
 
 const STATUS_MAP: Record<MockOrder["status"], { label: string; color: string; bg: string }> = {
-  submitted: { label: "已提交", color: "#60A5FA", bg: "rgba(96,165,250,0.12)" },
-  matching:  { label: "撮合中", color: "#FBBF24", bg: "rgba(251,191,36,0.12)" },
-  filled:    { label: "已成交", color: "#34D399", bg: "rgba(52,211,153,0.12)" },
-  cancelled: { label: "已撤单", color: "#94A3B8", bg: "rgba(148,163,184,0.12)" },
+  submitted:       { label: "已提交", color: "#60A5FA", bg: "rgba(96,165,250,0.12)" },
+  matching:        { label: "撮合中", color: "#FBBF24", bg: "rgba(251,191,36,0.12)" },
+  partial_filled:  { label: "部分成交", color: "#A78BFA", bg: "rgba(167,139,250,0.12)" },
+  filled:          { label: "已成交", color: "#34D399", bg: "rgba(52,211,153,0.12)" },
+  cancelled:       { label: "已撤单", color: "#94A3B8", bg: "rgba(148,163,184,0.12)" },
+  rejected:        { label: "已拒绝", color: "#EF4444", bg: "rgba(239,68,68,0.12)" },
 };
 
 function relativeTime(ts: number): string {
