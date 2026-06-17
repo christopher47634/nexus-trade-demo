@@ -20,6 +20,7 @@ import {
   Wine,
 } from "lucide-react";
 import SectorVisualBackground from "@/components/sector/SectorVisualBackground";
+import MobileCanvasWrapper from "@/components/sector-visuals/MobileCanvasWrapper";
 
 const iconMap: Record<string, React.ElementType> = {
   Zap,
@@ -199,6 +200,13 @@ function SectorCards() {
                 visualType={sector.visualType}
                 accentColor={sector.accentColor}
                 intensity="subtle"
+              />
+
+              {/* Mobile Canvas 2D background — behind text, reduced size */}
+              <MobileCanvasWrapper
+                visualType={sector.visualType}
+                width={120}
+                height={120}
               />
 
               {/* Content — z-10 above backgrounds */}

@@ -20,7 +20,11 @@ import {
   Flame,
   Crown,
 } from "lucide-react";
+import { useRef, useState, useEffect } from "react";
 import SectorVisualBackground from "@/components/sector/SectorVisualBackground";
+import HoverGlow from "@/components/sector-visuals/HoverGlow";
+import { isCanvasVisualsEnabled } from "@/lib/feature-flags";
+import { getSectorCanvas } from "@/components/sector-visuals/getSectorCanvas";
 
 const iconMap: Record<string, React.ElementType> = {
   Zap,
@@ -60,6 +64,48 @@ function MiniSparkline({ color }: { color: string }) {
   );
 }
 
+/** Wrapper that measures its container and renders the correct canvas */
+function CanvasCardBackground({ visualType }: { visualType: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [dims, setDims] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const update = () => {
+      const rect = el.getBoundingClientRect();
+      setDims({ width: Math.round(rect.width), height: Math.round(rect.height) });
+    };
+    update();
+
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const hasSize = dims.width > 0 && dims.height > 0;
+
+  const CanvasComponent = getSectorCanvas(visualType);
+
+  return (
+    <div ref={containerRef} className="absolute inset-0 z-0">
+      {hasSize && CanvasComponent && (
+        <CanvasComponent
+          width={dims.width}
+          height={dims.height}
+          animationsEnabled
+        />
+      )}
+      {/* Dark overlay for text readability over canvas */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: "rgba(2,6,18,0.35)" }}
+      />
+    </div>
+  );
+}
+
 export default function HotSectorGrid() {
   const router = useRouter();
   const sortedSectors = [...sectors].sort((a, b) => a.hotRank - b.hotRank);
@@ -71,6 +117,7 @@ export default function HotSectorGrid() {
         const isUp = sector.changePercent >= 0;
         const isTop3 = i < 3;
         const isRank1 = i === 0;
+        const hasCanvasVisual = isCanvasVisualsEnabled() && !!getSectorCanvas(sector.visualType);
 
         return (
           <motion.div
@@ -115,13 +162,28 @@ export default function HotSectorGrid() {
               intensity="subtle"
             />
 
-            {/* Layer 2: Left-side dark overlay — ensures text readability */}
+            {/* Layer 2: Canvas background for all sectors (feature-flagged) */}
+            {hasCanvasVisual && (
+              <CanvasCardBackground visualType={sector.visualType} />
+            )}
+
+            {/* Layer 3: Left-side dark overlay — ensures text readability */}
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
                 background: 'linear-gradient(90deg, rgba(2,6,18,0.65) 0%, rgba(2,6,18,0.45) 40%, transparent 70%)',
               }}
             />
+
+            {/* HoverGlow for upgraded cards */}
+            {hasCanvasVisual && (
+              <HoverGlow
+                enabled
+                color={sector.accentColor}
+                radius={170}
+                opacity={0.14}
+              />
+            )}
 
             {/* Top highlight glass overlay */}
             <div
@@ -185,24 +247,26 @@ export default function HotSectorGrid() {
                 </div>
               </div>
 
-              {/* Name */}
-              <h3
+              {/* Name — shared layout transition with detail page */}
+              <motion.h3
+                layoutId={`sector-name-${sector.id}`}
                 className={cn(
                   "font-semibold text-[var(--text-primary)] mb-1",
                   isTop3 ? "text-base" : "text-sm"
                 )}
               >
                 {sector.name}
-              </h3>
+              </motion.h3>
 
-              {/* Change */}
+              {/* Change — shared layout transition with detail page */}
               <div className="flex items-center gap-1.5 mb-2">
                 {isUp ? (
                   <TrendingUp size={12} className="text-up" />
                 ) : (
                   <TrendingDown size={12} className="text-down" />
                 )}
-                <span
+                <motion.span
+                  layoutId={`sector-change-${sector.id}`}
                   className={cn(
                     "font-bold font-mono-nums",
                     isTop3 ? "text-xl" : "text-lg",
@@ -210,7 +274,7 @@ export default function HotSectorGrid() {
                   )}
                 >
                   {formatPercent(sector.changePercent)}
-                </span>
+                </motion.span>
               </div>
 
               {/* Sparkline */}

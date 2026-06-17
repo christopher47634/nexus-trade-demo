@@ -151,3 +151,9 @@ stock-trading-demo/
 - Key: `nexus-trade-orders`
 - 刷新页面或清除浏览器数据后订单可能丢失
 - 当前不包含真实交易、不接券商接口、不构成投资建议
+
+## 环境变量
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| NEXT_PUBLIC_ENABLE_CANVAS_VISUALS | true | 启用 Canvas 高级板块视觉。设为 false 回退到 P1 静态背景 |

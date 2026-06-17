@@ -32,6 +32,8 @@ import SectorHeroArtwork from "@/components/sector/SectorHeroArtwork";
 import HeroKpiCard from "@/components/sector/HeroKpiCard";
 import EmptyState from "@/components/common/EmptyState";
 import ErrorState from "@/components/common/ErrorState";
+import { isCanvasVisualsEnabled } from "@/lib/feature-flags";
+import { getSectorCanvas } from "@/components/sector-visuals/getSectorCanvas";
 
 const iconMap: Record<string, React.ElementType> = {
   Zap,
@@ -45,6 +47,54 @@ const iconMap: Record<string, React.ElementType> = {
   HeartPulse,
   Wine,
 };
+
+/** Canvas 2D background for sector detail hero — measures container dynamically */
+function CanvasHeroBackground({
+  visualType,
+}: {
+  visualType: string;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [dims, setDims] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const update = () => {
+      const rect = el.getBoundingClientRect();
+      setDims({ width: Math.round(rect.width), height: Math.round(rect.height) });
+    };
+    update();
+
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  if (!isCanvasVisualsEnabled()) return null;
+  const CanvasComponent = getSectorCanvas(visualType);
+  if (!CanvasComponent) return null;
+
+  const hasSize = dims.width > 0 && dims.height > 0;
+
+  return (
+    <div ref={containerRef} className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+      {hasSize && (
+        <CanvasComponent
+          width={dims.width}
+          height={dims.height}
+          animationsEnabled
+        />
+      )}
+      {/* Dark overlay for text readability */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: "rgba(2,6,18,0.3)" }}
+      />
+    </div>
+  );
+}
 
 type SortKey = "turnover" | "changePercent" | "name" | "price" | "turnoverRate" | "marketCap";
 
@@ -165,6 +215,11 @@ export default function SectorDetailPage() {
             accentColor={sector.accentColor}
           />
 
+          {/* Canvas 2D animated background — feature-flagged */}
+          <CanvasHeroBackground
+            visualType={sector.visualType}
+          />
+
           <div className="relative z-10 flex items-start justify-between">
             <div className="flex items-center gap-4">
               <motion.div
@@ -186,6 +241,7 @@ export default function SectorDetailPage() {
               </motion.div>
               <div>
                 <motion.h1
+                  layoutId={`sector-name-${sectorId}`}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.15 }}
@@ -206,6 +262,7 @@ export default function SectorDetailPage() {
 
             <div className="text-right">
               <motion.div
+                layoutId={`sector-change-${sectorId}`}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.2 }}
