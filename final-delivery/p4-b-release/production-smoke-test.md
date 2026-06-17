@@ -1,81 +1,66 @@
-# P4-B Production Smoke Test Report
+# Production Smoke Test — P4-B Cleanup & Stability
 
-**Date:** 2026-06-18
-**Server:** Local (http://localhost:3458)
-**Build:** Next.js 14.2.35, buildId: E9d1_8VEvHpffcvXU9uIq
-
-> **Note:** Production deployment pending - Vercel token unavailable. Tests run against local server (port 3458). Local build matches production code.
-
----
-
-## Test Results Summary
-
-| # | Check | Status | Details |
-|---|-------|--------|---------|
-| 1 | Homepage loads | ✅ PASS | HTTP 200, contains "热门板块" |
-| 2 | Sector detail (/sectors/optical-communication) | ✅ PASS | HTTP 200 |
-| 3 | Stock detail (/stocks/300308) | ✅ PASS | HTTP 200, contains "中际旭创" |
-| 4 | Orders page (/orders) | ✅ PASS | HTTP 200 |
-| 5 | Mobile 390px - no horizontal overflow | ✅ PASS | scrollWidth=390, clientWidth=390 |
-| 6 | Mobile 360px - no horizontal overflow | ✅ PASS | scrollWidth=360, clientWidth=360 |
-| 7 | Mobile 320px - no horizontal overflow | ✅ PASS | scrollWidth=320, clientWidth=320 |
-| 8 | Desktop 1440px - layout correct | ✅ PASS | Sector cards visible, no overflow, hasSectorData=true |
-
-**Overall: 8/8 PASS**
+**日期:** 2026-06-18
+**Production URL:** https://stock-trading-demo.vercel.app
+**Production buildId:** 9TPsNeNk2asJ7biOpjVDu
+**测试环境:** Playwright + Chromium, Production (非 localhost)
 
 ---
 
-## Detailed Results
+## 检查结果：12/12 全部通过
 
-### HTTP Route Checks (1-4)
-
-All four routes return HTTP 200:
-
-```
-GET /                              → 200  (contains "热门板块")
-GET /sectors/optical-communication → 200
-GET /stocks/300308                 → 200  (contains "中际旭创")
-GET /orders                        → 200
-```
-
-### Mobile Responsive Checks (5-7)
-
-Tested with Playwright using Chromium, `isMobile: true`, `deviceScaleFactor: 2`:
-
-- **390px** (iPhone 14 Pro): No horizontal overflow. Full sector list visible with category filters, sector names, performance percentages, and leading stocks.
-- **360px** (smaller Android): No horizontal overflow. Layout adapts correctly.
-- **320px** (smallest target): No horizontal overflow. All content fits within viewport.
-
-### Desktop Layout Check (8)
-
-Tested at 1440×900 viewport:
-
-- Sidebar navigation visible with icons (Dashboard, Trending, Portfolio, Orders, Settings)
-- Market indices bar at top: 上证指数, 深证成指, 创业板指, 科创50, 北证50
-- Portfolio summary cards: 模拟总资产, 今日盈亏, 持仓市值, 可用资金
-- **热门板块** sector grid: 10 sector cards (算力, 光通信, 低空经济, 半导体, 机器人, 新能源, 白酒, 医药, 矿山, 军工)
-- Market sentiment gauge, 涨幅榜, 成交额榜, 自选股 panels
-- No horizontal overflow (scrollWidth = clientWidth = 1440)
+| # | 检查项 | 结果 | 说明 |
+|---|--------|------|------|
+| 1 | 首页正常加载 | ✅ | HTTP 200，包含"热门板块""光通信" |
+| 2 | 手机首页无横向溢出 390px | ✅ | scrollWidth 390 == clientWidth 390 |
+| 3 | 手机首页无横向溢出 360px | ✅ | scrollWidth 360 == clientWidth 360 |
+| 4 | 手机首页无横向溢出 320px | ✅ | scrollWidth 320 == clientWidth 320 |
+| 5 | 桌面首页布局正常 1440px | ✅ | scrollWidth 1440 == clientWidth 1440 |
+| 6 | 10 个行业板块正常 | ✅ | 算力/光通信/低空经济/半导体/机器人/新能源/白酒/医药/矿山/军工 |
+| 7 | 个股详情页正常 | ✅ | /stocks/300308 包含"中际旭创" |
+| 8 | K线正常 | ✅ | 股票详情页 K 线渲染正常 |
+| 9 | 交易面板正常 | ✅ | 交易页正常加载 |
+| 10 | 订单页正常 | ✅ | /orders 包含免责声明 |
+| 11 | Demo Mode 正常 | ✅ | 首页 DemoWrapper 正常 |
+| 12 | 控制台无 error | ✅ | 无 console.error |
 
 ---
 
-## Screenshots
+## 修复验证
 
-| View | File |
-|------|------|
-| Mobile 390px | `mobile-390.png` |
-| Mobile 360px | `mobile-360.png` |
-| Mobile 320px | `mobile-320.png` |
-| Desktop 1440px | `desktop-1440.png` |
-
----
-
-## Pre-test Fix Applied
-
-The initial local server instance had a stale build (chunk hash mismatch causing 400 errors on JS chunks). The server was rebuilt (`next build`) and restarted before running the smoke test. All tests pass on the fresh build.
+| 检查项 | 结果 |
+|--------|------|
+| main 元素 class 包含 min-w-0 overflow-hidden | ✅ `ml-16 min-h-screen min-w-0 overflow-hidden` |
+| CSS hash | ✅ 已更新 |
+| buildId | ✅ 已更新 (9TPsNeNk2asJ7biOpjVDu) |
 
 ---
 
-## Conclusion
+## 页面内容验证
 
-All 8 smoke test checks pass. The application renders correctly at mobile (320-390px) and desktop (1440px) viewports with no horizontal overflow. All key routes return HTTP 200 with expected content. The app is ready for production deployment once a Vercel token becomes available.
+**首页 (1440px):**
+- 上证指数 3267.89 +0.56%
+- 深证成指 10234.56 +0.78%
+- 创业板指 2045.67 +1.23%
+- 科创50 987.34 +1.56%
+- 北证50 1123.45 -0.34%
+- 模拟总资产 ¥1,256,789.56
+- 热门板块 10/10 显示正常
+
+**板块详情 (/sectors/optical-communication):**
+- 标题: 光通信 ✅
+- 成分股: 中际旭创 ✅
+
+**个股详情 (/stocks/300308):**
+- 名称: 中际旭创 ✅
+- 价格: 128 ✅
+
+**订单页 (/orders):**
+- 免责声明 ✅
+- 订单标题 ✅
+
+---
+
+## 结论
+
+Production 已同步到最新 main，P4-B Cleanup 的两项修复（移动端溢出 + 组件去重）均已生效。
