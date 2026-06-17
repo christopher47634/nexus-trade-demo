@@ -84,7 +84,7 @@ export default function DesktopShell({
       </motion.aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-16 min-h-screen">
+      <main className="flex-1 ml-16 min-h-screen min-w-0 overflow-hidden">
         {children}
       </main>
     </div>
