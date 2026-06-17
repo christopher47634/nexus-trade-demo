@@ -9,6 +9,7 @@ import OrderBook from "@/components/stock/OrderBook";
 import TradePanel from "@/components/stock/TradePanel";
 import { getStockByCode } from "@/mock/stocks";
 import { getKlineData } from "@/mock/kline";
+import { getSectorById } from "@/mock/sectors";
 import { cn, formatPercent } from "@/lib/utils";
 import ErrorState from "@/components/common/ErrorState";
 import {
@@ -20,6 +21,8 @@ import {
   Repeat,
   Building2,
   AlertTriangle,
+  LineChart,
+  ArrowRightLeft,
 } from "lucide-react";
 
 export default function StockDetailPage() {
@@ -28,6 +31,7 @@ export default function StockDetailPage() {
   const stockCode = params.stockCode as string;
   const stock = getStockByCode(stockCode);
   const klineData = useMemo(() => getKlineData(stockCode), [stockCode]);
+  const sector = stock ? getSectorById(stock.sectorId) : undefined;
   const [showTrade, setShowTrade] = useState(false);
   const [tradeSide, setTradeSide] = useState<"buy" | "sell">("buy");
 
@@ -46,6 +50,25 @@ export default function StockDetailPage() {
   }
 
   const isUp = stock.changePercent >= 0;
+
+  // Calculate moving averages from kline data
+  const closes = klineData.map((d) => d.close);
+  const calcMA = (period: number) => {
+    if (closes.length < period) return null;
+    const slice = closes.slice(-period);
+    return slice.reduce((a, b) => a + b, 0) / period;
+  };
+  const ma5 = calcMA(5);
+  const ma10 = calcMA(10);
+  const ma20 = calcMA(20);
+
+  // Stock analysis text based on performance
+  const analysisText =
+    stock.changePercent > 3
+      ? "今日强势上涨，成交活跃，短期趋势偏多"
+      : stock.changePercent < -2
+        ? "今日跌幅较大，注意风险，建议观望"
+        : "今日窄幅震荡，成交温和";
 
   const handleBuy = () => {
     setTradeSide("buy");
@@ -207,6 +230,142 @@ export default function StockDetailPage() {
             className="col-span-3 glass p-4 rounded-2xl"
           >
             <OrderBook currentPrice={stock.price} prevClose={stock.prevClose} />
+          </motion.div>
+        </div>
+
+        {/* Technical Indicators + Analysis */}
+        <div className="grid grid-cols-12 gap-4">
+          {/* Technical indicators */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.4 }}
+            className="col-span-5 glass p-4 rounded-2xl"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <LineChart size={14} className="text-[var(--accent)]" />
+              <h3 className="text-sm font-semibold text-[var(--text-primary)]">
+                技术指标
+              </h3>
+              <span className="text-[10px] text-[var(--text-muted)]">
+                MA均线
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { label: "MA5", value: ma5, color: "#D4A574" },
+                { label: "MA10", value: ma10, color: "#60A5FA" },
+                { label: "MA20", value: ma20, color: "#A78BFA" },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  className="p-2.5 rounded-lg"
+                  style={{ background: "rgba(255,255,255,0.02)" }}
+                >
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <div
+                      className="w-2 h-0.5 rounded-full"
+                      style={{ background: item.color }}
+                    />
+                    <span className="text-[10px] text-[var(--text-muted)]">
+                      {item.label}
+                    </span>
+                  </div>
+                  <span
+                    className="text-sm font-semibold font-mono-nums"
+                    style={{ color: item.color }}
+                  >
+                    {item.value !== null ? item.value.toFixed(2) : "—"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Analysis + Capital flow */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35, duration: 0.4 }}
+            className="col-span-7 glass p-4 rounded-2xl"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <ArrowRightLeft size={14} className="text-[var(--accent)]" />
+              <h3 className="text-sm font-semibold text-[var(--text-primary)]">
+                盘面分析
+              </h3>
+            </div>
+            <div className="space-y-3">
+              {/* Analysis text */}
+              <div className="p-3 rounded-lg" style={{ background: "rgba(255,255,255,0.02)" }}>
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <div
+                    className="w-1.5 h-1.5 rounded-full"
+                    style={{
+                      background:
+                        stock.changePercent > 0
+                          ? "var(--up)"
+                          : stock.changePercent < 0
+                            ? "var(--down)"
+                            : "var(--accent)",
+                    }}
+                  />
+                  <span className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider">
+                    个股分析
+                  </span>
+                </div>
+                <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                  {analysisText}
+                </p>
+              </div>
+
+              {/* Capital flow */}
+              {sector && (
+                <div className="p-3 rounded-lg" style={{ background: "rgba(255,255,255,0.02)" }}>
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <div
+                      className="w-1.5 h-1.5 rounded-full"
+                      style={{
+                        background: sector.capitalInflow.startsWith("+")
+                          ? "var(--up)"
+                          : "var(--down)",
+                      }}
+                    />
+                    <span className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider">
+                      资金流向
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-[var(--text-secondary)]">
+                      所属板块 {sector.name} 当日资金流向
+                    </span>
+                    <span
+                      className={cn(
+                        "text-xs font-semibold font-mono-nums",
+                        sector.capitalInflow.startsWith("+")
+                          ? "text-up"
+                          : "text-down"
+                      )}
+                    >
+                      {sector.capitalInflow}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between mt-1">
+                    <span className="text-xs text-[var(--text-muted)]">
+                      板块涨跌幅
+                    </span>
+                    <span
+                      className={cn(
+                        "text-xs font-semibold font-mono-nums",
+                        sector.changePercent >= 0 ? "text-up" : "text-down"
+                      )}
+                    >
+                      {formatPercent(sector.changePercent)}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
           </motion.div>
         </div>
       </div>
