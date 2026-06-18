@@ -47,6 +47,7 @@ export default function PositionTable({
         delay: delay * 0.08,
         ease: [0.25, 0.46, 0.45, 0.94],
       }}
+      data-demo-highlight="portfolio-table"
       className="glass overflow-hidden rounded-xl"
     >
       {/* Component Header */}

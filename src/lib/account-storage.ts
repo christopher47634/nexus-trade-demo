@@ -143,3 +143,77 @@ export function resetAccount(): void {
   saveTransactions(mockTransactions);
   savePortfolioHistory(mockPortfolioHistory);
 }
+// ─── Demo Data Strategy ───────────────────────────────────────────
+
+const DEMO_ORDERS_KEY = 'nexus-trade-demo-orders';
+const DEMO_POSITIONS_KEY = 'nexus-trade-demo-positions';
+
+export interface DemoIdentifiable {
+  source?: string;
+  [key: string]: unknown;
+}
+
+/**
+ * Add a demo order with source: "demo" marker.
+ * Deduplicates by order ID to prevent stacking on repeat runs.
+ */
+export function addDemoOrder<T extends { id: string }>(order: T): T & { source: string } {
+  const tagged = { ...order, source: 'demo' };
+  const existing = getJson<Array<{ id: string }>>(DEMO_ORDERS_KEY, []);
+  if (!existing.some((o) => o.id === order.id)) {
+    existing.push(tagged);
+    setJson(DEMO_ORDERS_KEY, existing);
+  }
+  return tagged;
+}
+
+/**
+ * Add a demo position with source: "demo" marker.
+ * Deduplicates by stockCode to prevent stacking on repeat runs.
+ */
+export function addDemoPosition<T extends { stockCode: string }>(position: T): T & { source: string } {
+  const tagged = { ...position, source: 'demo' };
+  const existing = getJson<Array<{ stockCode: string }>>(DEMO_POSITIONS_KEY, []);
+  if (!existing.some((p) => p.stockCode === position.stockCode)) {
+    existing.push(tagged);
+    setJson(DEMO_POSITIONS_KEY, existing);
+  }
+  return tagged;
+}
+
+/**
+ * Get all demo orders.
+ */
+export function getDemoOrders<T>(): T[] {
+  return getJson<T[]>(DEMO_ORDERS_KEY, []);
+}
+
+/**
+ * Get all demo positions.
+ */
+export function getDemoPositions<T>(): T[] {
+  return getJson<T[]>(DEMO_POSITIONS_KEY, []);
+}
+
+/**
+ * Check if demo data exists.
+ */
+export function hasDemoData(): boolean {
+  if (!isClient()) return false;
+  return (
+    window.localStorage.getItem(DEMO_ORDERS_KEY) !== null ||
+    window.localStorage.getItem(DEMO_POSITIONS_KEY) !== null
+  );
+}
+
+/**
+ * Reset only demo data — clears source=demo items, preserves user's manual data.
+ */
+export function resetDemoData(): void {
+  if (!isClient()) return;
+  window.localStorage.removeItem(DEMO_ORDERS_KEY);
+  window.localStorage.removeItem(DEMO_POSITIONS_KEY);
+  // Also clean demo mode flags
+  window.localStorage.removeItem('demoMode');
+  window.localStorage.removeItem('demoModeStep');
+}
