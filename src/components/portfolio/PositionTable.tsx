@@ -5,20 +5,10 @@ import { useRouter } from "next/navigation";
 import { cn, formatCurrency } from "@/lib/utils";
 import type { Position } from "@/types/account";
 import { getSectorById } from "@/mock/sectors";
-import {
-  Package,
-  AlertTriangle,
-} from "lucide-react";
-import { FlowHoverSurface } from "@/components/common/FlowHoverSurface";
+import { Package } from "lucide-react";
 
-const RISK_CONFIG: Record<
-  Position["riskLevel"],
-  { label: string; color: string; bg: string }
-> = {
-  low: { label: "低", color: "#34D399", bg: "rgba(52,211,153,0.12)" },
-  medium: { label: "中", color: "#FBBF24", bg: "rgba(251,191,36,0.12)" },
-  high: { label: "高", color: "#EF4444", bg: "rgba(239,68,68,0.12)" },
-};
+const GRID_COLS =
+  "minmax(140px, 1.3fr) minmax(90px, 0.8fr) minmax(90px, 0.8fr) minmax(90px, 0.8fr) minmax(90px, 0.8fr) minmax(110px, 1fr) minmax(110px, 1fr) minmax(100px, 0.9fr)";
 
 interface PositionTableProps {
   positions: Position[];
@@ -59,7 +49,7 @@ export default function PositionTable({
       }}
       className="glass overflow-hidden rounded-xl"
     >
-      {/* Header */}
+      {/* Component Header */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--border-subtle)]">
         <div className="flex items-center gap-2">
           <Package size={16} className="text-[var(--accent)]" />
@@ -72,8 +62,11 @@ export default function PositionTable({
         </div>
       </div>
 
-      {/* Table Header */}
-      <div className="hidden md:grid grid-cols-[160px_80px_90px_90px_90px_90px_100px_100px_80px_70px_60px] gap-1 px-5 py-2.5 text-[10px] font-medium text-[var(--text-muted)] border-b border-[var(--border-subtle)]">
+      {/* Table Header Row */}
+      <div
+        className="grid px-5 py-2.5 text-[10px] font-medium text-[var(--text-muted)] border-b border-[var(--border-subtle)]"
+        style={{ gridTemplateColumns: GRID_COLS }}
+      >
         <span>股票</span>
         <span>板块</span>
         <span className="text-right">持仓/可用</span>
@@ -82,16 +75,12 @@ export default function PositionTable({
         <span className="text-right">市值</span>
         <span className="text-right">浮动盈亏</span>
         <span className="text-right">今日盈亏</span>
-        <span className="text-right">仓位</span>
-        <span className="text-center">盈亏%</span>
-        <span className="text-center">风险</span>
       </div>
 
       {/* Table Body */}
       <div className="divide-y divide-[var(--border-subtle)]">
         {positions.map((pos, i) => {
           const sector = getSectorById(pos.sectorId);
-          const risk = RISK_CONFIG[pos.riskLevel];
           const pnlColor =
             pos.unrealizedPnL > 0
               ? "text-up"
@@ -112,11 +101,14 @@ export default function PositionTable({
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.25, delay: i * 0.03 }}
               onClick={() => router.push(`/stocks/${pos.stockCode}`)}
-              className="grid grid-cols-2 md:grid-cols-[160px_80px_90px_90px_90px_90px_100px_100px_80px_70px_60px] gap-1 px-5 py-3 text-sm items-center hover:bg-[var(--surface-2)] transition-colors duration-150 cursor-pointer"
+              className="grid px-5 text-sm items-center hover:bg-[var(--surface-2)] transition-colors duration-150 cursor-pointer"
+              style={{
+                gridTemplateColumns: GRID_COLS,
+                minHeight: "68px",
+              }}
             >
-            <FlowHoverSurface variant="row">
-              {/* Stock */}
-              <div className="flex flex-col">
+              {/* Stock Name + Code */}
+              <div className="flex flex-col justify-center">
                 <span className="text-[var(--text-primary)] font-medium">
                   {pos.stockName}
                 </span>
@@ -126,12 +118,12 @@ export default function PositionTable({
               </div>
 
               {/* Sector */}
-              <span className="hidden md:block text-[10px] text-[var(--text-muted)] truncate">
+              <span className="text-[10px] text-[var(--text-muted)] truncate">
                 {sector?.name || pos.sectorId}
               </span>
 
-              {/* Quantity */}
-              <div className="hidden md:flex flex-col items-end">
+              {/* Quantity / Available */}
+              <div className="flex flex-col items-end">
                 <span className="text-xs text-[var(--text-primary)] font-mono-nums">
                   {pos.quantity.toLocaleString()}
                 </span>
@@ -141,81 +133,41 @@ export default function PositionTable({
               </div>
 
               {/* Avg Cost */}
-              <span className="hidden md:block text-right text-xs text-[var(--text-secondary)] font-mono-nums">
+              <span className="text-right text-xs text-[var(--text-secondary)] font-mono-nums">
                 ¥{pos.avgCost.toFixed(2)}
               </span>
 
               {/* Current Price */}
-              <div className="text-right">
-                <span className="text-xs font-semibold text-[var(--text-primary)] font-mono-nums">
-                  ¥{pos.currentPrice.toFixed(2)}
-                </span>
-              </div>
+              <span className="text-right text-xs font-semibold text-[var(--text-primary)] font-mono-nums">
+                ¥{pos.currentPrice.toFixed(2)}
+              </span>
 
               {/* Market Value */}
-              <span className="hidden md:block text-right text-xs text-[var(--text-primary)] font-mono-nums">
+              <span className="text-right text-xs text-[var(--text-primary)] font-mono-nums">
                 ¥{formatCurrency(pos.marketValue)}
               </span>
 
               {/* Unrealized P&L */}
-              <div className="hidden md:flex flex-col items-end">
-                <span
-                  className={cn("text-xs font-semibold font-mono-nums", pnlColor)}
-                >
-                  {pos.unrealizedPnL >= 0 ? "+" : ""}
-                  {formatCurrency(pos.unrealizedPnL)}
-                </span>
-              </div>
+              <span
+                className={cn(
+                  "text-right text-xs font-semibold font-mono-nums",
+                  pnlColor
+                )}
+              >
+                {pos.unrealizedPnL >= 0 ? "+" : ""}
+                {formatCurrency(pos.unrealizedPnL)}
+              </span>
 
               {/* Today P&L */}
-              <div className="hidden md:flex flex-col items-end">
-                <span
-                  className={cn("text-xs font-mono-nums", todayColor)}
-                >
-                  {pos.todayPnL >= 0 ? "+" : ""}
-                  {formatCurrency(pos.todayPnL)}
-                </span>
-              </div>
-
-              {/* Position Ratio */}
-              <span className="hidden md:block text-right text-xs text-[var(--text-secondary)] font-mono-nums">
-                {(pos.positionRatio * 100).toFixed(1)}%
+              <span
+                className={cn(
+                  "text-right text-xs font-mono-nums",
+                  todayColor
+                )}
+              >
+                {pos.todayPnL >= 0 ? "+" : ""}
+                {formatCurrency(pos.todayPnL)}
               </span>
-
-              {/* P&L Percent */}
-              <div className="flex flex-col items-end md:items-center">
-                <span
-                  className={cn(
-                    "text-xs font-semibold font-mono-nums",
-                    pos.unrealizedPnLPercent > 0
-                      ? "text-up"
-                      : pos.unrealizedPnLPercent < 0
-                      ? "text-down"
-                      : "text-[var(--text-secondary)]"
-                  )}
-                >
-                  {pos.unrealizedPnLPercent > 0 ? "+" : ""}
-                  {pos.unrealizedPnLPercent.toFixed(2)}%
-                </span>
-                {/* Mobile: show market value */}
-                <span className="md:hidden text-[10px] text-[var(--text-muted)] font-mono-nums">
-                  市值 ¥{formatCurrency(pos.marketValue)}
-                </span>
-              </div>
-
-              {/* Risk Level */}
-              <span className="hidden md:flex justify-center">
-                <span
-                  className="px-1.5 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-0.5"
-                  style={{ color: risk.color, backgroundColor: risk.bg }}
-                >
-                  {pos.riskLevel === "high" && (
-                    <AlertTriangle size={8} />
-                  )}
-                  {risk.label}
-                </span>
-              </span>
-            </FlowHoverSurface>
             </motion.div>
           );
         })}

@@ -11,14 +11,13 @@ import {
   Settings,
   List,
 } from "lucide-react";
-import { FlowHoverSurface } from "@/components/common/FlowHoverSurface";
 
 const TYPE_CONFIG: Record<
   AccountTransaction["type"],
   { label: string; icon: typeof ArrowDownCircle; color: string }
 > = {
-  buy: { label: "买入", icon: ArrowDownCircle, color: "var(--up)" },
-  sell: { label: "卖出", icon: ArrowUpCircle, color: "var(--down)" },
+  buy: { label: "买入", icon: ArrowDownCircle, color: "var(--down)" },
+  sell: { label: "卖出", icon: ArrowUpCircle, color: "var(--up)" },
   fee: { label: "费用", icon: Receipt, color: "var(--text-muted)" },
   dividend: { label: "分红", icon: Gift, color: "var(--accent)" },
   adjustment: {
@@ -76,20 +75,18 @@ export default function TransactionList({
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.2, delay: i * 0.02 }}
-              className="flex items-center gap-3 px-5 py-2.5 hover:bg-[var(--surface-2)] transition-colors"
+              className="flex items-center justify-between px-5 hover:bg-[var(--surface-2)] transition-colors"
+              style={{ minHeight: "62px" }}
             >
-            <FlowHoverSurface variant="subtle">
-              {/* Type icon */}
-              <div
-                className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-                style={{ background: `${config.color}15` }}
-              >
-                <Icon size={14} style={{ color: config.color }} />
-              </div>
-
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
+              {/* Left: icon + type + stock code */}
+              <div className="flex items-center gap-3 min-w-0">
+                <div
+                  className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                  style={{ background: `${config.color}15` }}
+                >
+                  <Icon size={14} style={{ color: config.color }} />
+                </div>
+                <div className="flex flex-col">
                   <span className="text-xs font-medium text-[var(--text-primary)]">
                     {config.label}
                   </span>
@@ -97,32 +94,33 @@ export default function TransactionList({
                     {txn.stockCode}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-[10px] text-[var(--text-muted)]">
-                    {new Date(txn.createdAt).toLocaleString("zh-CN", {
-                      month: "2-digit",
-                      day: "2-digit",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </span>
-                  <span className="text-[10px] text-[var(--text-muted)] font-mono opacity-50">
-                    {txn.relatedOrderId}
-                  </span>
-                </div>
               </div>
 
-              {/* Amount */}
+              {/* Middle: time + order ID */}
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-[var(--text-muted)]">
+                  {new Date(txn.createdAt).toLocaleString("zh-CN", {
+                    month: "2-digit",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+                <span className="text-[10px] text-[var(--text-muted)] font-mono opacity-50">
+                  {txn.relatedOrderId}
+                </span>
+              </div>
+
+              {/* Right: amount */}
               <span
                 className={cn(
-                  "text-sm font-semibold font-mono-nums flex-shrink-0",
-                  isPositive ? "text-up" : "text-[var(--text-primary)]"
+                  "text-sm font-semibold font-mono-nums text-right flex-shrink-0",
+                  isPositive ? "text-up" : "text-down"
                 )}
               >
                 {isPositive ? "+" : ""}
                 {formatCurrency(txn.amount)}
               </span>
-            </FlowHoverSurface>
             </motion.div>
           );
         })}

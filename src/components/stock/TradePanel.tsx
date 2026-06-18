@@ -4,7 +4,9 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Stock } from "@/mock/stocks";
-import { createOrder, updateOrderStatus, type MockOrder } from "@/mock/orders";
+import { type MockOrder } from "@/mock/orders";
+import { getAccount } from "@/lib/account-storage";
+import { executeBuy, executeSell, getMaxBuyQuantity, getAvailableSellQuantity, calcCommission, calcStampTax } from "@/lib/trade-engine";
 import {
   X,
   Minus,
@@ -26,18 +28,7 @@ interface TradePanelProps {
   onClose: () => void;
 }
 
-const AVAILABLE_FUNDS = 1000000;
-
-/** Commission: 0.025% of total, minimum ¥5 */
-function calcCommission(total: number): number {
-  return Math.max(5, parseFloat((total * 0.00025).toFixed(2)));
-}
-
-/** Stamp tax: sell-only, 0.05% of total */
-function calcStampTax(total: number, side: TradeSide): number {
-  if (side === "buy") return 0;
-  return parseFloat((total * 0.0005).toFixed(2));
-}
+// AVAILABLE_FUNDS removed — now uses live account data
 
 export default function TradePanel({
   stock,
@@ -50,41 +41,58 @@ export default function TradePanel({
   const [quantity, setQuantity] = useState(100);
   const [step, setStep] = useState<OrderStep>("input");
   const [orderType, setOrderType] = useState<"limit" | "market">("limit");
+  const [error, setError] = useState<string | null>(null);
 
   const priceNum = parseFloat(price) || 0;
   const totalAmount = priceNum * quantity;
   const commission = calcCommission(totalAmount);
-  const stampTax = calcStampTax(totalAmount, side);
+  const stampTax = side === "sell" ? calcStampTax(totalAmount) : 0;
   const netAmount =
     side === "buy"
       ? totalAmount + commission
       : totalAmount - commission - stampTax;
-  const maxBuy = Math.floor(AVAILABLE_FUNDS / priceNum / 100) * 100;
+  const accountData = getAccount();
+  const availableCash = accountData.availableCash;
+  const maxBuy = getMaxBuyQuantity(priceNum);
+  const availableSellQty = getAvailableSellQuantity(stock.code);
   const quantityLots = quantity / 100;
 
   const orderRef = useRef<MockOrder | null>(null);
 
   const handleSubmit = () => {
+    setError(null);
     setStep("confirm");
   };
 
   const handleConfirmOrder = () => {
-    const order = createOrder({
-      stockCode: stock.code,
-      stockName: stock.name,
-      side,
-      price: priceNum,
-      quantity,
-    });
-    orderRef.current = order;
+    const result = side === "buy"
+      ? executeBuy({
+          stockCode: stock.code,
+          stockName: stock.name,
+          sectorId: stock.sectorId,
+          price: priceNum,
+          quantity,
+        })
+      : executeSell({
+          stockCode: stock.code,
+          stockName: stock.name,
+          price: priceNum,
+          quantity,
+        });
+
+    if (!result.success) {
+      setError(result.error ?? "交易失败");
+      setStep("input");
+      return;
+    }
+
+    orderRef.current = result.order ?? null;
     setStep("submitted");
     setTimeout(() => {
       setStep("matching");
-      updateOrderStatus(order.id, "matching");
     }, 1200);
     setTimeout(() => {
       setStep("filled");
-      updateOrderStatus(order.id, "filled");
     }, 3000);
   };
 
@@ -327,6 +335,21 @@ export default function TradePanel({
                   <div className="text-[10px] text-[var(--text-muted)] mt-1 text-center font-mono-nums">
                     = {quantity.toLocaleString()}股
                   </div>
+                  {side === "sell" && (
+                    <div className="text-[10px] text-[var(--accent)] mt-0.5 text-center font-mono-nums">
+                      可卖: {availableSellQty.toLocaleString()} 股
+                    </div>
+                  )}
+                  {side === "buy" && priceNum > 0 && totalAmount + commission > availableCash && (
+                    <div className="text-[10px] text-red-400 mt-0.5 text-center">
+                      ⚠ 可用资金不足
+                    </div>
+                  )}
+                  {side === "sell" && quantity > availableSellQty && (
+                    <div className="text-[10px] text-red-400 mt-0.5 text-center">
+                      ⚠ 超过可卖数量
+                    </div>
+                  )}
                 </div>
 
                 {/* Quick quantity buttons */}
@@ -336,7 +359,7 @@ export default function TradePanel({
                     const qty =
                       side === "buy"
                         ? Math.floor((maxBuy * ratios[i]) / 100) * 100
-                        : Math.floor((5000 * ratios[i]) / 100) * 100;
+                        : Math.floor((availableSellQty * ratios[i]) / 100) * 100;
                     return (
                       <button
                         key={label}
@@ -394,7 +417,7 @@ export default function TradePanel({
                     <span className="text-[var(--text-muted)]">可用资金</span>
                     <span className="text-[var(--text-secondary)] font-mono-nums">
                       ¥
-                      {AVAILABLE_FUNDS.toLocaleString("zh-CN", {
+                      {availableCash.toLocaleString("zh-CN", {
                         minimumFractionDigits: 2,
                       })}
                     </span>
@@ -406,10 +429,17 @@ export default function TradePanel({
                     <span className="text-[var(--accent)] font-mono-nums">
                       {side === "buy"
                         ? `${maxBuy.toLocaleString()}股`
-                        : "5,000股"}
+                        : `${availableSellQty.toLocaleString()}股`}
                     </span>
                   </div>
                 </div>
+
+                {/* Error display */}
+                {error && (
+                  <div className="text-xs text-[var(--down)] bg-[var(--down)]/10 px-3 py-2 rounded-lg">
+                    {error}
+                  </div>
+                )}
 
                 {/* Submit button */}
                 <motion.button

@@ -80,18 +80,51 @@ export function savePortfolioHistory(history: PortfolioHistory[]): void {
 export function initializeAccount(): void {
   if (!isClient()) return;
 
-  // 1. Ensure positions exist
+  // 先检查是否已有账户数据（用户做过交易）
+  const existingAccount = window.localStorage.getItem(STORAGE_KEY);
+  if (existingAccount) {
+    try {
+      const parsed = JSON.parse(existingAccount) as AccountSummary;
+      // 如果有有效的 availableCash，不要重置
+      if (typeof parsed.availableCash === 'number' && parsed.availableCash > 0) {
+        // 只更新 positions 相关的字段，保留 availableCash
+        const positions = getPositions();
+        const marketValue = positions.reduce((sum, p) => sum + p.marketValue, 0);
+        const totalPnL = positions.reduce((sum, p) => sum + p.unrealizedPnL, 0);
+        const todayPnL = positions.reduce((sum, p) => sum + p.todayPnL, 0);
+        const totalAssets = parsed.availableCash + marketValue;
+        const positionRatio = totalAssets > 0 ? marketValue / totalAssets : 0;
+
+        const highRiskValue = positions.filter(p => p.riskLevel === 'high').reduce((sum, p) => sum + p.marketValue, 0);
+        const highRiskRatio = totalAssets > 0 ? highRiskValue / totalAssets : 0;
+        const riskLevel = highRiskRatio > 0.3 ? 'high' : positionRatio > 0.6 ? 'medium' : 'low';
+
+        saveAccount({
+          ...parsed,
+          totalAssets,
+          marketValue,
+          totalPnL,
+          todayPnL,
+          positionRatio,
+          riskLevel,
+          updatedAt: new Date().toISOString()
+        });
+        return;
+      }
+    } catch { /* fall through to reinitialize */ }
+  }
+
+  // 首次初始化：写入 positions 和 account
   const existingPositions = window.localStorage.getItem(POSITIONS_KEY);
   if (existingPositions === null) {
     savePositions(mockPositions);
   }
 
-  // 2. Always recompute account from current positions
   const positions = getPositions();
   const account = getAccountSummary(positions);
   saveAccount(account);
 
-  // 3. Transactions & history (only if missing)
+  // Transactions & history (only if missing)
   if (window.localStorage.getItem(TRANSACTIONS_KEY) === null) {
     saveTransactions(mockTransactions);
   }
