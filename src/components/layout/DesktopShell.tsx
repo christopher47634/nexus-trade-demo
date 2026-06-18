@@ -18,7 +18,7 @@ import { motion } from "framer-motion";
 const navItems = [
   { icon: LayoutDashboard, label: "市场", href: "/" },
   { icon: TrendingUp, label: "板块", href: "/#sectors" },
-  { icon: Briefcase, label: "持仓", href: "/#portfolio" },
+  { icon: Briefcase, label: "持仓", href: "/portfolio" },
   { icon: ClipboardList, label: "订单", href: "/orders" },
   { icon: Settings, label: "设置", href: "/#settings" },
 ];
