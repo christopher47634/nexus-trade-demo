@@ -78,10 +78,10 @@ function CanvasCardBackground({ visualType, hoverIntensity = 0 }: { visualType: 
           hoverIntensity={hoverIntensity}
         />
       )}
-      {/* Dark overlay for text readability over canvas */}
+      {/* Dark overlay for text readability over canvas — P5-A1 visual fix: reduced from 0.35 to restore background visibility */}
       <div
         className="absolute inset-0 pointer-events-none"
-        style={{ background: "rgba(2,6,18,0.35)" }}
+        style={{ background: "rgba(2,6,18,0.12)" }}
       />
     </div>
   );
@@ -160,11 +160,11 @@ export default function HotSectorGrid() {
               />
             )}
 
-            {/* Layer 3: Left-side dark overlay — ensures text readability */}
+            {/* Layer 3: Left-side dark overlay — ensures text readability — P5-A1 visual fix: reduced from 0.65/0.45 */}
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
-                background: 'linear-gradient(90deg, rgba(2,6,18,0.65) 0%, rgba(2,6,18,0.45) 40%, transparent 70%)',
+                background: 'linear-gradient(90deg, rgba(2,6,18,0.48) 0%, rgba(2,6,18,0.25) 40%, transparent 70%)',
               }}
             />
 
