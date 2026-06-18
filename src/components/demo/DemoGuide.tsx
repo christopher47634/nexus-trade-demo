@@ -4,6 +4,7 @@ import { useEffect, useCallback, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePathname, useRouter } from "next/navigation";
 import { useDemo, demoSteps } from "./DemoMode";
+import { ensureDemoTradeSeeded } from "@/lib/account-storage";
 
 /* ─────────────────── Step Configuration ─────────────────────── */
 
@@ -240,6 +241,11 @@ export default function DemoGuide() {
 
     // Click handler
     const handleClick = () => {
+      // Seed demo trade data when leaving confirm-buy step (step 5)
+      if (currentStep === 5) {
+        ensureDemoTradeSeeded();
+      }
+
       cleanup();
       cleanupRef.current = null;
 

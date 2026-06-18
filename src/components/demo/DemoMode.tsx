@@ -10,6 +10,7 @@ import {
 } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, X, Sparkles } from "lucide-react";
+import { setDemoActive, resetDemoData } from "@/lib/account-storage";
 
 /* ─────────────────────────── Context ─────────────────────────── */
 
@@ -78,6 +79,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   const startDemo = useCallback(() => {
     setDemoMode(true);
     setCurrentStep(0);
+    setDemoActive(true);
   }, []);
 
   const stopDemo = useCallback(() => {
@@ -85,6 +87,8 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     setCurrentStep(0);
     localStorage.removeItem("demoMode");
     localStorage.removeItem("demoModeStep");
+    resetDemoData();
+    setDemoActive(false);
   }, []);
 
   const nextStep = useCallback(() => {
@@ -94,6 +98,8 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         setDemoMode(false);
         localStorage.removeItem("demoMode");
         localStorage.removeItem("demoModeStep");
+        resetDemoData();
+        setDemoActive(false);
         return 0;
       }
       return prev + 1;
