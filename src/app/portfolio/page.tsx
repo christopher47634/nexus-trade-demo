@@ -14,6 +14,7 @@ import {
   getTransactions,
   getPortfolioHistory,
   isDemoModeActive,
+  ensureDemoTradeSeeded,
   getDemoTransactions,
   getDemoAccountOverlay,
   applyDemoAccountOverlay,
@@ -41,6 +42,7 @@ export default function PortfolioPage() {
     const baseHistory = getPortfolioHistory();
 
     if (isDemoModeActive()) {
+      ensureDemoTradeSeeded(); // 兜底：确保 demo 数据存在
       const overlay = getDemoAccountOverlay();
       const demoPositions = overlay.positions;
 

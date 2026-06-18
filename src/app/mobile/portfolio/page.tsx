@@ -8,6 +8,7 @@ import {
   getAccount,
   getPositions,
   isDemoModeActive,
+  ensureDemoTradeSeeded,
   getDemoAccountOverlay,
   applyDemoAccountOverlay,
 } from "@/lib/account-storage";
@@ -26,6 +27,7 @@ export default function MobilePortfolioPage() {
     const basePositions = getPositions();
 
     if (isDemoModeActive()) {
+      ensureDemoTradeSeeded(); // 兜底：确保 demo 数据存在
       const overlay = getDemoAccountOverlay();
       const demoPositions = overlay.positions;
 

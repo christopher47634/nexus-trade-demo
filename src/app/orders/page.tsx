@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ClipboardList, BarChart3, PlayCircle, AlertCircle } from "lucide-react";
 import { getOrders, MockOrder } from "@/mock/orders";
-import { getDemoOrders, isDemoModeActive } from "@/lib/account-storage";
+import { getDemoOrders, isDemoModeActive, ensureDemoTradeSeeded } from "@/lib/account-storage";
 import EmptyState from "@/components/common/EmptyState";
 
 const STATUS_MAP: Record<
@@ -75,6 +75,9 @@ export default function OrdersPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
+    if (isDemoModeActive()) {
+      ensureDemoTradeSeeded(); // 兜底：确保 demo 数据存在
+    }
     const normalOrders = getOrders();
     const demoOrders = isDemoModeActive() ? getDemoOrders<MockOrder & { source?: string }>() : [];
     setOrders([...demoOrders, ...normalOrders]);
