@@ -7,6 +7,7 @@ import { ClipboardList, BarChart3, PlayCircle, AlertCircle } from "lucide-react"
 import { getOrders, MockOrder } from "@/mock/orders";
 import { getDemoOrders, isDemoModeActive, ensureDemoTradeSeeded } from "@/lib/account-storage";
 import EmptyState from "@/components/common/EmptyState";
+import DesktopShell from "@/components/layout/DesktopShell";
 
 const STATUS_MAP: Record<
   MockOrder["status"],
@@ -98,6 +99,7 @@ export default function OrdersPage() {
   };
 
   return (
+    <DesktopShell>
     <div className="p-4 md:p-6 pb-20 md:pb-6 max-w-5xl mx-auto page-enter">
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -144,12 +146,13 @@ export default function OrdersPage() {
           </motion.div>
         </div>
       ) : (
+        <>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
           data-demo-highlight="order-table"
-          className="glass overflow-x-auto rounded-xl"
+          className="glass overflow-x-auto rounded-xl hidden md:block"
         >
           {/* Table Header */}
           <div className="grid grid-cols-[160px_1fr_70px_90px_80px_110px_80px_140px] gap-2 px-5 py-3 text-xs font-medium text-[var(--text-muted)] border-b border-[var(--border-subtle)]">
@@ -388,6 +391,119 @@ export default function OrdersPage() {
             </AnimatePresence>
           </div>
         </motion.div>
+
+        {/* Mobile Order Cards */}
+        <div className="md:hidden space-y-3" data-demo-highlight="order-table">
+          {orders.map((order, i) => {
+            const st = STATUS_MAP[order.status];
+            const isExpanded = expandedId === order.id;
+            return (
+              <motion.div
+                key={order.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, delay: i * 0.03 }}
+                className="glass rounded-xl overflow-hidden"
+              >
+                <div
+                  onClick={() => toggleExpand(order.id)}
+                  className="px-4 py-3 cursor-pointer"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[var(--text-primary)] font-medium text-sm">
+                        {order.stockName}
+                      </span>
+                      <span className="text-[var(--text-muted)] text-xs font-mono">
+                        {order.stockCode}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="px-2 py-0.5 rounded text-xs font-medium"
+                        style={{
+                          color: order.side === "buy" ? "var(--up)" : "var(--down)",
+                          background: order.side === "buy" ? "rgba(52,211,153,0.1)" : "rgba(239,68,68,0.1)",
+                        }}
+                      >
+                        {order.side === "buy" ? "买入" : "卖出"}
+                      </span>
+                      <span
+                        className="px-2 py-0.5 rounded text-xs font-medium"
+                        style={{ color: st.color, backgroundColor: st.bg }}
+                      >
+                        {st.label}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-[var(--text-primary)] font-mono">
+                      ¥{order.price.toFixed(2)}
+                    </span>
+                    <span className="text-[var(--text-secondary)] font-mono">
+                      ×{order.quantity.toLocaleString()}
+                    </span>
+                    <span className="text-[var(--text-primary)] font-mono font-medium">
+                      ¥{order.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between mt-1.5">
+                    <span className="text-[var(--text-muted)] text-[11px]">
+                      {relativeTime(order.createdAt)}
+                    </span>
+                    {(order as MockOrder & { source?: string }).source === 'demo' && (
+                      <span
+                        className="px-1.5 py-0.5 rounded text-[10px] font-medium"
+                        style={{ color: '#D4A574', background: 'rgba(212,165,116,0.12)' }}
+                      >
+                        演示
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Expanded detail */}
+                <AnimatePresence>
+                  {isExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-4 py-3 bg-[var(--surface-1)] border-t border-[var(--border-subtle)] text-xs">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <span className="text-[var(--text-muted)] block mb-0.5">委托编号</span>
+                            <span className="text-[var(--text-secondary)] font-mono text-[11px]">{order.id}</span>
+                          </div>
+                          <div>
+                            <span className="text-[var(--text-muted)] block mb-0.5">委托时间</span>
+                            <span className="text-[var(--text-secondary)] font-mono text-[11px]">{formatTime(order.createdAt)}</span>
+                          </div>
+                          {order.commission !== undefined && (
+                            <div>
+                              <span className="text-[var(--text-muted)] block mb-0.5">佣金</span>
+                              <span className="text-[var(--text-primary)] font-mono">¥{order.commission.toFixed(2)}</span>
+                            </div>
+                          )}
+                          {order.stampTax !== undefined && (
+                            <div>
+                              <span className="text-[var(--text-muted)] block mb-0.5">印花税</span>
+                              <span className="text-[var(--text-primary)] font-mono">¥{order.stampTax.toFixed(2)}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            );
+          })}
+        </div>
+        </>
       )}
 
       {/* Disclaimer */}
@@ -402,5 +518,6 @@ export default function OrdersPage() {
         </p>
       </motion.div>
     </div>
+    </DesktopShell>
   );
 }

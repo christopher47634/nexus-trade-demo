@@ -93,7 +93,7 @@ export default function DesktopShell({
       </main>
 
       {/* Mobile Bottom Nav — visible only on mobile */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden flex items-center justify-around py-2 bg-[var(--surface-1)] border-t border-[var(--border-subtle)]">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden flex items-center justify-around py-2.5 bg-[#0d0d14]/95 backdrop-blur-xl border-t border-[rgba(212,165,116,0.12)]" style={{boxShadow: '0 -4px 20px rgba(0,0,0,0.4)'}}>
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
