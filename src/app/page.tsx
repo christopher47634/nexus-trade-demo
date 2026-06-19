@@ -49,7 +49,7 @@ export default function DesktopHomePage() {
       <IndexTicker />
 
       {/* Main Content */}
-      <div className="p-6 space-y-6">
+      <div className="p-6 space-y-6 page-enter">
         {/* Account & Market Summary Row */}
         <div className="grid grid-cols-4 gap-3">
           <MetricCard

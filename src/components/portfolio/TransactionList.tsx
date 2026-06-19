@@ -76,7 +76,7 @@ export default function TransactionList({
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.2, delay: i * 0.02 }}
-              className="flex items-center justify-between px-5 hover:bg-[var(--surface-2)] transition-colors"
+              className="flex items-center justify-between px-5 hover:bg-[var(--surface-2)] transition-colors row-interactive"
               style={{ minHeight: "62px" }}
             >
               {/* Left: icon + type + stock code */}

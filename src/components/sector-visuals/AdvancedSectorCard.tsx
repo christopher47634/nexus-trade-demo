@@ -72,7 +72,8 @@ export default function AdvancedSectorCard({
       onClick={() => router.push(`/sectors/${sector.id}`)}
       className={cn(
         "group relative overflow-hidden rounded-2xl cursor-pointer",
-        isRank1 && "rank-1-glow"
+        isRank1 && "rank-1-glow",
+        "card-interactive mobile-press"
       )}
       style={{
         background:

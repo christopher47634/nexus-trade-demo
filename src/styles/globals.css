@@ -467,3 +467,116 @@ body {
     transition: transform 150ms ease-out;
   }
 }
+
+/* ===== P6: Card Interactive Hover ===== */
+.card-interactive {
+  transition: transform var(--hover-duration, 200ms) var(--ease, cubic-bezier(0.25, 0.1, 0.25, 1)),
+              box-shadow var(--hover-duration, 200ms) var(--ease, cubic-bezier(0.25, 0.1, 0.25, 1)),
+              border-color var(--hover-duration, 200ms) var(--ease, cubic-bezier(0.25, 0.1, 0.25, 1));
+}
+
+.card-interactive:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 20px rgba(212, 165, 116, 0.12);
+  border-color: rgba(212, 165, 116, 0.25);
+}
+
+/* ===== P6: Row Interactive Hover ===== */
+.row-interactive {
+  position: relative;
+  overflow: hidden;
+  transition: background-color 200ms ease;
+}
+
+.row-interactive:hover {
+  background-color: rgba(212, 165, 116, 0.04);
+}
+
+.row-interactive:hover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(212, 165, 116, 0.06), transparent);
+  animation: row-sweep 800ms ease-out;
+  pointer-events: none;
+}
+
+@keyframes row-sweep {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+
+/* ===== P6: Button Press Feedback ===== */
+.btn-press {
+  transition: transform 150ms ease, filter 150ms ease;
+}
+
+.btn-press:active {
+  transform: scale(0.98);
+  filter: brightness(1.1);
+}
+
+.btn-press:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== P6: Page Enter Transition ===== */
+.page-enter {
+  animation: page-fade-in 280ms ease-out;
+}
+
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== P6: Demo Highlight Enhancement ===== */
+[data-demo-highlight] {
+  position: relative;
+  outline: 2px solid rgba(212, 165, 116, 0.4);
+  outline-offset: 2px;
+  border-radius: 8px;
+  animation: demo-pulse 2s ease-in-out infinite;
+}
+
+@keyframes demo-pulse {
+  0%, 100% { outline-color: rgba(212, 165, 116, 0.3); }
+  50% { outline-color: rgba(212, 165, 116, 0.6); }
+}
+
+/* ===== P6: Mobile Press Feedback ===== */
+@media (max-width: 768px) {
+  .mobile-press {
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 150ms ease;
+  }
+
+  .mobile-press:active {
+    transform: scale(0.98);
+  }
+}
+
+/* ===== P6: Reduced Motion Overrides ===== */
+@media (prefers-reduced-motion: reduce) {
+  .card-interactive:hover {
+    transform: none;
+  }
+  .row-interactive:hover::after {
+    animation: none;
+    background: rgba(212, 165, 116, 0.04);
+  }
+  .page-enter {
+    animation: none;
+  }
+  [data-demo-highlight] {
+    animation: none;
+    outline-color: rgba(212, 165, 116, 0.5);
+  }
+}

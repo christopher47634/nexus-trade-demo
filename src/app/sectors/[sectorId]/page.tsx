@@ -161,7 +161,7 @@ export default function SectorDetailPage() {
 
   return (
     <DesktopShell>
-      <div className="p-6 space-y-6">
+      <div className="p-6 space-y-6 page-enter">
         {/* Back button */}
         <motion.button
           initial={{ opacity: 0, x: -10 }}
@@ -353,7 +353,7 @@ export default function SectorDetailPage() {
                   }}
                   onClick={() => router.push(`/stocks/${stock.code}`)}
                   data-demo-highlight={i === 0 ? "first-stock" : undefined}
-                  className="flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-[var(--surface-1)] transition-colors cursor-pointer group"
+                  className="flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-[var(--surface-1)] transition-colors cursor-pointer group row-interactive mobile-press"
                 >
                   <span
                     className={cn(
