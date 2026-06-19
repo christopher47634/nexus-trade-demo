@@ -12,6 +12,7 @@ import {
   Clock,
 } from "lucide-react";
 import { FlowHoverSurface } from "@/components/common/FlowHoverSurface";
+import { MagneticSurface } from "@/components/interaction/MagneticSurface";
 
 const RISK_CONFIG: Record<
   AccountSummary["riskLevel"],
@@ -50,6 +51,7 @@ export default function AccountOverviewCard({
       : "text-[var(--text-secondary)]";
 
   return (
+    <MagneticSurface>
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
@@ -208,5 +210,6 @@ export default function AccountOverviewCard({
       </div>
     </FlowHoverSurface>
     </motion.div>
+    </MagneticSurface>
   );
 }

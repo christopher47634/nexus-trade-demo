@@ -82,7 +82,7 @@ export default function StockDetailPage() {
 
   return (
     <DesktopShell>
-      <div className="p-6 space-y-5 page-enter">
+      <div className="p-4 md:p-6 pb-20 md:pb-5 space-y-4 md:space-y-5 page-enter">
         {/* Back button */}
         <motion.button
           initial={{ opacity: 0, x: -10 }}
@@ -122,13 +122,13 @@ export default function StockDetailPage() {
           transition={{ duration: 0.4 }}
           className="glass p-5 rounded-2xl"
         >
-          <div className="flex items-start justify-between">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
             <div>
-              <div className="flex items-center gap-3 mb-1">
-                <h1 className="text-xl font-bold text-[var(--text-primary)]">
+              <div className="flex items-center gap-2 md:gap-3 mb-1 flex-wrap">
+                <h1 className="text-lg md:text-xl font-bold text-[var(--text-primary)]">
                   {stock.name}
                 </h1>
-                <span className="text-sm text-[var(--text-muted)] font-mono-nums">
+                <span className="text-xs md:text-sm text-[var(--text-muted)] font-mono-nums">
                   {stock.code}
                 </span>
                 <span
@@ -153,21 +153,21 @@ export default function StockDetailPage() {
                   {stock.sectorId}
                 </button>
               </div>
-              <div className="flex items-baseline gap-3">
+              <div className="flex items-baseline gap-2 md:gap-3">
                 <span
                   className={cn(
-                    "text-3xl font-bold font-mono-nums",
+                    "text-2xl md:text-3xl font-bold font-mono-nums",
                     isUp ? "text-up" : "text-down"
                   )}
                 >
                   {stock.price.toFixed(2)}
                 </span>
                 <div className={cn("flex items-center gap-1", isUp ? "text-up" : "text-down")}>
-                  {isUp ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
-                  <span className="text-sm font-semibold font-mono-nums">
+                  {isUp ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                  <span className="text-xs md:text-sm font-semibold font-mono-nums">
                     {formatPercent(stock.changePercent)}
                   </span>
-                  <span className="text-xs font-mono-nums">
+                  <span className="text-[11px] md:text-xs font-mono-nums">
                     ({stock.changeAmount > 0 ? "+" : ""}
                     {stock.changeAmount.toFixed(2)})
                   </span>
@@ -175,24 +175,38 @@ export default function StockDetailPage() {
               </div>
             </div>
 
-            {/* Buy/Sell buttons */}
-            <div className="flex gap-2">
+            {/* Buy/Sell buttons — glassmorphism */}
+            <div className="flex gap-2 shrink-0">
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={handleBuy}
                 data-demo-highlight="buy-button"
-                className="px-6 py-2.5 rounded-xl text-sm font-semibold bg-[var(--up)] text-[var(--bg-primary)] hover:shadow-[0_0_24px_rgba(52,211,153,0.3)] transition-shadow btn-press mobile-press"
+                className="relative px-5 md:px-6 py-2 md:py-2.5 rounded-xl text-sm font-semibold text-white transition-all btn-press mobile-press overflow-hidden"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(52,211,153,0.25) 0%, rgba(52,211,153,0.08) 100%)',
+                  border: '1px solid rgba(52,211,153,0.35)',
+                  backdropFilter: 'blur(12px)',
+                  boxShadow: '0 2px 12px rgba(52,211,153,0.15), inset 0 1px 0 rgba(255,255,255,0.06)',
+                  textShadow: '0 1px 2px rgba(0,0,0,0.3)',
+                }}
               >
-                买入
+                <span className="relative z-10 text-[#34D399] font-bold">买入</span>
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={handleSell}
-                className="px-6 py-2.5 rounded-xl text-sm font-semibold bg-[var(--down)] text-white hover:shadow-[0_0_24px_rgba(248,113,113,0.3)] transition-shadow btn-press mobile-press"
+                className="relative px-5 md:px-6 py-2 md:py-2.5 rounded-xl text-sm font-semibold text-white transition-all btn-press mobile-press overflow-hidden"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(248,113,113,0.25) 0%, rgba(248,113,113,0.08) 100%)',
+                  border: '1px solid rgba(248,113,113,0.35)',
+                  backdropFilter: 'blur(12px)',
+                  boxShadow: '0 2px 12px rgba(248,113,113,0.15), inset 0 1px 0 rgba(255,255,255,0.06)',
+                  textShadow: '0 1px 2px rgba(0,0,0,0.3)',
+                }}
               >
-                卖出
+                <span className="relative z-10 text-[#F87171] font-bold">卖出</span>
               </motion.button>
             </div>
           </div>
@@ -211,13 +225,13 @@ export default function StockDetailPage() {
         </motion.div>
 
         {/* Main content: Chart + OrderBook */}
-        <div className="grid grid-cols-12 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
           {/* K-line chart */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15, duration: 0.4 }}
-            className="col-span-9 glass p-4 rounded-2xl"
+            className="md:col-span-9 glass p-4 rounded-2xl"
           >
             <KlineChart data={klineData} />
           </motion.div>
@@ -227,20 +241,20 @@ export default function StockDetailPage() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25, duration: 0.4 }}
-            className="col-span-3 glass p-4 rounded-2xl"
+            className="md:col-span-3 glass p-4 rounded-2xl"
           >
             <OrderBook currentPrice={stock.price} prevClose={stock.prevClose} />
           </motion.div>
         </div>
 
         {/* Technical Indicators + Analysis */}
-        <div className="grid grid-cols-12 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
           {/* Technical indicators */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.4 }}
-            className="col-span-5 glass p-4 rounded-2xl"
+            className="md:col-span-5 glass p-4 rounded-2xl"
           >
             <div className="flex items-center gap-2 mb-3">
               <LineChart size={14} className="text-[var(--accent)]" />
@@ -287,7 +301,7 @@ export default function StockDetailPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.35, duration: 0.4 }}
-            className="col-span-7 glass p-4 rounded-2xl"
+            className="md:col-span-7 glass p-4 rounded-2xl"
           >
             <div className="flex items-center gap-2 mb-3">
               <ArrowRightLeft size={14} className="text-[var(--accent)]" />

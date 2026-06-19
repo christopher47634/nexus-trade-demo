@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { sectorIconMap, SectorFallback } from "@/components/icons/SectorIcons";
 import VisualCardComparison from "@/components/visual-lab/VisualCardComparison";
+import { MagneticSurface } from "@/components/interaction/MagneticSurface";
 
 const iconMap = sectorIconMap;
 
@@ -59,6 +60,7 @@ export default function AdvancedSectorCard({
   const isRank1 = sector.hotRank === 1;
 
   return (
+    <MagneticSurface intensity="subtle">
     <motion.div
       key={sector.id}
       initial={{ opacity: 0, y: 20, scale: 0.95 }}
@@ -268,5 +270,6 @@ export default function AdvancedSectorCard({
         </div>
       </div>
     </motion.div>
+    </MagneticSurface>
   );
 }

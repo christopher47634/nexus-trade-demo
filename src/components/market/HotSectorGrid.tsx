@@ -98,7 +98,7 @@ export default function HotSectorGrid() {
   }, []);
 
   return (
-    <div className="grid grid-cols-5 gap-3" id="sectors">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3" id="sectors">
       {sortedSectors.map((sector, i) => {
         const Icon = iconMap[sector.icon] || SectorFallback;
         const isUp = sector.changePercent >= 0;
