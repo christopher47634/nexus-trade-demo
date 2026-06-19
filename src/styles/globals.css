@@ -563,6 +563,58 @@ body {
   }
 }
 
+/* ===== P7-A: Ripple Expand Animation ===== */
+@keyframes ripple-expand {
+  to {
+    width: 300px;
+    height: 300px;
+    opacity: 0;
+  }
+}
+
+.cursor-glow-overlay {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cursor-glow-overlay {
+    display: block;
+  }
+}
+
+/* ===== P7-A: Row Interactive Enhancement ===== */
+.row-interactive::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, transparent, rgba(212,165,116,0.3), transparent);
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.row-interactive:hover::before {
+  opacity: 1;
+}
+
+/* ===== P7-A: Demo Highlight Enhancement ===== */
+[data-demo-highlight]::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(212,165,116,0.5);
+  animation: demo-ring-pulse 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes demo-ring-pulse {
+  0%, 100% { border-color: rgba(212,165,116,0.3); }
+  50% { border-color: rgba(212,165,116,0.6); }
+}
+
 /* ===== P6: Reduced Motion Overrides ===== */
 @media (prefers-reduced-motion: reduce) {
   .card-interactive:hover {

@@ -18,6 +18,7 @@ import {
   Lock,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { ClickRipple } from "@/components/interaction/ClickRipple";
 
 type TradeSide = "buy" | "sell";
 type OrderStep = "input" | "confirm" | "submitted" | "matching" | "filled";
@@ -442,6 +443,7 @@ export default function TradePanel({
                 )}
 
                 {/* Submit button */}
+                <ClickRipple>
                 <motion.button
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.98 }}
@@ -458,6 +460,7 @@ export default function TradePanel({
                 >
                   {side === "buy" ? "确认买入" : "确认卖出"}
                 </motion.button>
+                </ClickRipple>
 
                 {/* Risk disclaimer */}
                 <p className="text-[10px] text-[var(--text-muted)] text-center leading-relaxed opacity-60">
@@ -566,6 +569,7 @@ export default function TradePanel({
                   >
                     取消
                   </motion.button>
+                  <ClickRipple>
                   <motion.button
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.98 }}
@@ -579,6 +583,7 @@ export default function TradePanel({
                   >
                     确认委托
                   </motion.button>
+                </ClickRipple>
                 </div>
               </motion.div>
             )}

@@ -1,6 +1,8 @@
 "use client";
 
 import { useMouseGlow } from "@/hooks/use-mouse-position";
+import { useCursorGlow } from "@/hooks/useCursorGlow";
+import { CursorOverlay } from "@/components/interaction/CursorOverlay";
 import {
   LayoutDashboard,
   TrendingUp,
@@ -29,6 +31,7 @@ export default function DesktopShell({
   children: React.ReactNode;
 }) {
   useMouseGlow();
+  useCursorGlow();
   const pathname = usePathname();
 
   return (
@@ -85,6 +88,7 @@ export default function DesktopShell({
 
       {/* Main Content */}
       <main className="flex-1 ml-16 min-h-screen min-w-0 overflow-hidden">
+        <CursorOverlay />
         {children}
       </main>
     </div>
