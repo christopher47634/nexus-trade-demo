@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "name": "Homepage loads",
+    "passed": true,
+    "detail": "Title: \"NexusTrade - 股票交易界面 Demo\""
+  },
+  {
+    "id": 2,
+    "name": "Homepage hover interaction",
+    "passed": true,
+    "detail": "Found 2 card elements, hover dispatched"
+  },
+  {
+    "id": 3,
+    "name": "Demo Mode activation",
+    "passed": true,
+    "detail": "Demo overlay/text detected"
+  },
+  {
+    "id": 4,
+    "name": "Trade panel visible on /stocks/300308",
+    "passed": true,
+    "detail": "Trade panel content found"
+  },
+  {
+    "id": 5,
+    "name": "Portfolio page with table",
+    "passed": true,
+    "detail": "Tables: 0, columns: 0, portfolio content: true"
+  },
+  {
+    "id": 6,
+    "name": "Mobile viewport (390x844)",
+    "passed": true,
+    "detail": "Page content length: 5793 chars"
+  },
+  {
+    "id": 7,
+    "name": "Console errors == 0",
+    "passed": false,
+    "detail": "Found 8 console errors: Minified React error #425; visit https://react.dev/errors/425 for the full message or use the non-minified dev environment for full errors and additional helpful warnings. | Minified React error #425; visit https://react.dev/errors/425 for the full message or use the non-minified dev environment for full errors and additional helpful warnings. | Minified React error #425; visit https://react.dev/errors/425 for the full message or use the non-minified dev environment for full errors and additional helpful warnings."
+  },
+  {
+    "id": 8,
+    "name": "Demo data in /orders",
+    "passed": true,
+    "detail": "Demo order data visible"
+  },
+  {
+    "id": 9,
+    "name": "Exit Demo mode (localStorage cleared)",
+    "passed": true,
+    "detail": "localStorage cleaned successfully"
+  }
+]
