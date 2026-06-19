@@ -325,8 +325,9 @@ export default function SectorDetailPage() {
         </motion.div>
 
         {/* Stock list with layoutId sorting animation */}
-        <div className="glass p-4 rounded-2xl">
-          <div className="flex items-center gap-3 px-2 py-2 text-[10px] text-[var(--text-muted)] uppercase tracking-wider border-b border-[var(--border-subtle)] mb-1">
+        <div className="glass p-3 md:p-4 rounded-2xl">
+          {/* Desktop header */}
+          <div className="hidden md:flex items-center gap-3 px-2 py-2 text-[10px] text-[var(--text-muted)] uppercase tracking-wider border-b border-[var(--border-subtle)] mb-1">
             <span className="w-10">序号</span>
             <span className="flex-1">股票</span>
             <span className="w-20 text-right">现价</span>
@@ -353,11 +354,11 @@ export default function SectorDetailPage() {
                   }}
                   onClick={() => router.push(`/stocks/${stock.code}`)}
                   data-demo-highlight={i === 0 ? "first-stock" : undefined}
-                  className="flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-[var(--surface-1)] transition-colors cursor-pointer group row-interactive mobile-press"
+                  className="flex items-center gap-2 md:gap-3 px-2 py-2.5 rounded-lg hover:bg-[var(--surface-1)] transition-colors cursor-pointer group row-interactive mobile-press"
                 >
                   <span
                     className={cn(
-                      "w-10 text-xs font-mono-nums",
+                      "w-7 md:w-10 text-xs font-mono-nums shrink-0",
                       i < 3
                         ? "text-[var(--accent)] font-semibold"
                         : "text-[var(--text-muted)]"
@@ -366,19 +367,25 @@ export default function SectorDetailPage() {
                     {i + 1}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <span className="text-sm text-[var(--text-primary)] font-medium group-hover:text-[var(--accent)] transition-colors">
-                      {stock.name}
-                    </span>
-                    <span className="text-[10px] text-[var(--text-muted)] font-mono-nums ml-2">
+                    <div className="flex items-center gap-1.5 md:gap-2">
+                      <span className="text-sm text-[var(--text-primary)] font-medium group-hover:text-[var(--accent)] transition-colors truncate">
+                        {stock.name}
+                      </span>
+                      <span className="text-[10px] text-[var(--text-muted)] font-mono-nums hidden sm:inline">
+                        {stock.code}
+                      </span>
+                    </div>
+                    {/* Mobile: show code below name */}
+                    <span className="text-[10px] text-[var(--text-muted)] font-mono-nums sm:hidden">
                       {stock.code}
                     </span>
                   </div>
-                  <span className="w-20 text-right text-sm font-semibold text-[var(--text-primary)] font-mono-nums">
+                  <span className="w-16 md:w-20 text-right text-sm font-semibold text-[var(--text-primary)] font-mono-nums shrink-0">
                     {stock.price.toFixed(2)}
                   </span>
                   <div
                     className={cn(
-                      "w-20 text-right flex items-center justify-end gap-0.5",
+                      "w-16 md:w-20 text-right flex items-center justify-end gap-0.5 shrink-0",
                       stockIsUp ? "text-up" : "text-down"
                     )}
                   >
@@ -391,13 +398,13 @@ export default function SectorDetailPage() {
                       {formatPercent(stock.changePercent)}
                     </span>
                   </div>
-                  <span className="w-20 text-right text-xs text-[var(--text-secondary)] font-mono-nums">
+                  <span className="hidden md:block w-20 text-right text-xs text-[var(--text-secondary)] font-mono-nums">
                     {stock.turnover}
                   </span>
-                  <span className="w-16 text-right text-xs text-[var(--text-secondary)] font-mono-nums">
+                  <span className="hidden md:block w-16 text-right text-xs text-[var(--text-secondary)] font-mono-nums">
                     {stock.turnoverRate}%
                   </span>
-                  <span className="w-20 text-right text-xs text-[var(--text-secondary)] font-mono-nums">
+                  <span className="hidden md:block w-20 text-right text-xs text-[var(--text-secondary)] font-mono-nums">
                     {stock.marketCap}
                   </span>
                 </motion.div>
