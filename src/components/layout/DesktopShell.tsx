@@ -22,7 +22,7 @@ const navItems = [
   { icon: TrendingUp, label: "板块", href: "/#sectors" },
   { icon: Briefcase, label: "持仓", href: "/portfolio" },
   { icon: ClipboardList, label: "订单", href: "/orders" },
-  { icon: Settings, label: "设置", href: "/#settings" },
+  { icon: Settings, label: "设置", href: "/settings" },
 ];
 
 export default function DesktopShell({
