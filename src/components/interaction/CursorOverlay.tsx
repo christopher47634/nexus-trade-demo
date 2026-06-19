@@ -2,12 +2,22 @@
 import { useEffect, useState } from 'react';
 
 export function CursorOverlay() {
+  const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
     const isTouchDevice = 'ontouchstart' in window;
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (isTouchDevice || prefersReduced) return;
+    const isSmall = window.innerWidth < 768;
+    
+    if (isTouchDevice || prefersReduced || isSmall) {
+      setMounted(true);
+      return; // Don't enable cursor overlay
+    }
+
+    setEnabled(true);
+    setMounted(true);
 
     const onEnter = () => setVisible(true);
     const onLeave = () => setVisible(false);
@@ -15,7 +25,6 @@ export function CursorOverlay() {
     document.addEventListener('mouseenter', onEnter);
     document.addEventListener('mouseleave', onLeave);
     
-    // Show on first mouse move
     const onMove = () => {
       setVisible(true);
       document.removeEventListener('mousemove', onMove);
@@ -28,6 +37,11 @@ export function CursorOverlay() {
       document.removeEventListener('mousemove', onMove);
     };
   }, []);
+
+  // Don't render anything on server or before mount
+  if (!mounted) return null;
+  // Don't render on touch/mobile/reduced-motion
+  if (!enabled) return null;
 
   return (
     <div

@@ -1,5 +1,5 @@
 'use client';
-import { useRef, useState, useCallback, type ReactNode } from 'react';
+import { useRef, useState, useCallback, useEffect, type ReactNode } from 'react';
 
 interface Props {
   children: ReactNode;
@@ -12,10 +12,18 @@ export function MagneticSurface({ children, intensity = 'subtle', className = ''
   const [transform, setTransform] = useState('');
   const [glowPos, setGlowPos] = useState({ x: 50, y: 50 });
   const [isHovered, setIsHovered] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
   const rafRef = useRef<number>(0);
 
   const maxTilt = intensity === 'subtle' ? 1.5 : 2.5;
   const maxLift = intensity === 'subtle' ? -3 : -5;
+
+  useEffect(() => {
+    const isTouchDevice = 'ontouchstart' in window;
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isSmall = window.innerWidth < 768;
+    setIsDesktop(!isTouchDevice && !prefersReduced && !isSmall);
+  }, []);
 
   const onMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!ref.current) return;
@@ -40,24 +48,26 @@ export function MagneticSurface({ children, intensity = 'subtle', className = ''
     setIsHovered(false);
   }, []);
 
-  const prefersReduced = typeof window !== 'undefined' 
-    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Mobile/touch/reduced: pass through children directly, no wrapper
+  if (!isDesktop) {
+    return <>{children}</>;
+  }
 
   return (
     <div
       ref={ref}
       className={`magnetic-surface ${className}`}
-      onMouseMove={prefersReduced ? undefined : onMove}
+      onMouseMove={onMove}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={onLeave}
       style={{
-        transform: prefersReduced ? undefined : transform || undefined,
+        transform: transform || undefined,
         transition: transform ? 'none' : 'transform 400ms cubic-bezier(0.25, 0.1, 0.25, 1)',
         position: 'relative',
         overflow: 'hidden',
       }}
     >
-      {isHovered && !prefersReduced && (
+      {isHovered && (
         <div
           style={{
             position: 'absolute',
