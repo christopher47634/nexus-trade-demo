@@ -161,7 +161,7 @@ export default function SectorDetailPage() {
 
   return (
     <DesktopShell>
-      <div className="p-6 space-y-6 page-enter">
+      <div className="p-4 md:p-6 pb-20 md:pb-6 space-y-4 md:space-y-6 page-enter">
         {/* Back button */}
         <motion.button
           initial={{ opacity: 0, x: -10 }}

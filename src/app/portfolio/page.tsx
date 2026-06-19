@@ -97,7 +97,7 @@ export default function PortfolioPage() {
 
   return (
     <DesktopShell>
-      <div className="p-6 space-y-5 max-w-7xl mx-auto page-enter">
+      <div className="p-4 md:p-6 pb-20 md:pb-6 space-y-4 md:space-y-5 max-w-7xl mx-auto page-enter">
         {/* Page Header */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}

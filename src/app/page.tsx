@@ -49,9 +49,9 @@ export default function DesktopHomePage() {
       <IndexTicker />
 
       {/* Main Content */}
-      <div className="p-6 space-y-6 page-enter">
+      <div className="p-4 md:p-6 pb-20 md:pb-6 space-y-4 md:space-y-6 page-enter">
         {/* Account & Market Summary Row */}
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <MetricCard
             label="模拟总资产"
             value={account.totalAssets}
@@ -102,14 +102,14 @@ export default function DesktopHomePage() {
         <HotSectorGrid />
 
         {/* Bottom Section: Rankings + Sentiment + Watchlist */}
-        <div className="grid grid-cols-12 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
           {/* Market Sentiment */}
-          <div className="col-span-3">
+          <div className="md:col-span-3">
             <MarketOverview />
           </div>
 
           {/* Top Gainers */}
-          <div className="col-span-3">
+          <div className="md:col-span-3">
             <RankingList
               title="涨幅榜"
               stocks={topGainers}
@@ -119,7 +119,7 @@ export default function DesktopHomePage() {
           </div>
 
           {/* Top by Turnover */}
-          <div className="col-span-3">
+          <div className="md:col-span-3">
             <RankingList
               title="成交额榜"
               stocks={topByTurnover}
@@ -129,7 +129,7 @@ export default function DesktopHomePage() {
           </div>
 
           {/* Watchlist */}
-          <div className="col-span-3">
+          <div className="md:col-span-3">
             <Watchlist delay={7} />
           </div>
         </div>

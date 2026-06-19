@@ -98,7 +98,7 @@ export default function OrdersPage() {
   };
 
   return (
-    <div className="p-6 max-w-5xl mx-auto page-enter">
+    <div className="p-4 md:p-6 pb-20 md:pb-6 max-w-5xl mx-auto page-enter">
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -149,7 +149,7 @@ export default function OrdersPage() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
           data-demo-highlight="order-table"
-          className="glass overflow-hidden rounded-xl"
+          className="glass overflow-x-auto rounded-xl"
         >
           {/* Table Header */}
           <div className="grid grid-cols-[160px_1fr_70px_90px_80px_110px_80px_140px] gap-2 px-5 py-3 text-xs font-medium text-[var(--text-muted)] border-b border-[var(--border-subtle)]">

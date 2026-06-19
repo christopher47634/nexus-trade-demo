@@ -82,7 +82,7 @@ export default function StockDetailPage() {
 
   return (
     <DesktopShell>
-      <div className="p-6 space-y-5 page-enter">
+      <div className="p-4 md:p-6 pb-20 md:pb-5 space-y-4 md:space-y-5 page-enter">
         {/* Back button */}
         <motion.button
           initial={{ opacity: 0, x: -10 }}
@@ -211,13 +211,13 @@ export default function StockDetailPage() {
         </motion.div>
 
         {/* Main content: Chart + OrderBook */}
-        <div className="grid grid-cols-12 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
           {/* K-line chart */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15, duration: 0.4 }}
-            className="col-span-9 glass p-4 rounded-2xl"
+            className="md:col-span-9 glass p-4 rounded-2xl"
           >
             <KlineChart data={klineData} />
           </motion.div>
@@ -227,20 +227,20 @@ export default function StockDetailPage() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25, duration: 0.4 }}
-            className="col-span-3 glass p-4 rounded-2xl"
+            className="md:col-span-3 glass p-4 rounded-2xl"
           >
             <OrderBook currentPrice={stock.price} prevClose={stock.prevClose} />
           </motion.div>
         </div>
 
         {/* Technical Indicators + Analysis */}
-        <div className="grid grid-cols-12 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
           {/* Technical indicators */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.4 }}
-            className="col-span-5 glass p-4 rounded-2xl"
+            className="md:col-span-5 glass p-4 rounded-2xl"
           >
             <div className="flex items-center gap-2 mb-3">
               <LineChart size={14} className="text-[var(--accent)]" />
@@ -287,7 +287,7 @@ export default function StockDetailPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.35, duration: 0.4 }}
-            className="col-span-7 glass p-4 rounded-2xl"
+            className="md:col-span-7 glass p-4 rounded-2xl"
           >
             <div className="flex items-center gap-2 mb-3">
               <ArrowRightLeft size={14} className="text-[var(--accent)]" />
