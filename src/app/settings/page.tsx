@@ -41,10 +41,8 @@ function Toggle({
       )}
     >
       <span
-        className={cn(
-          "absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-all duration-300",
-          enabled ? "left-[22px]" : "left-0.5"
-        )}
+        className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-all duration-300"
+        style={{ left: enabled ? "22px" : "2px" }}
       />
     </button>
   );
