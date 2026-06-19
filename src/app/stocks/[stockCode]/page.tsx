@@ -82,7 +82,7 @@ export default function StockDetailPage() {
 
   return (
     <DesktopShell>
-      <div className="p-6 space-y-5">
+      <div className="p-6 space-y-5 page-enter">
         {/* Back button */}
         <motion.button
           initial={{ opacity: 0, x: -10 }}
@@ -182,7 +182,7 @@ export default function StockDetailPage() {
                 whileTap={{ scale: 0.97 }}
                 onClick={handleBuy}
                 data-demo-highlight="buy-button"
-                className="px-6 py-2.5 rounded-xl text-sm font-semibold bg-[var(--up)] text-[var(--bg-primary)] hover:shadow-[0_0_24px_rgba(52,211,153,0.3)] transition-shadow"
+                className="px-6 py-2.5 rounded-xl text-sm font-semibold bg-[var(--up)] text-[var(--bg-primary)] hover:shadow-[0_0_24px_rgba(52,211,153,0.3)] transition-shadow btn-press mobile-press"
               >
                 买入
               </motion.button>
@@ -190,7 +190,7 @@ export default function StockDetailPage() {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={handleSell}
-                className="px-6 py-2.5 rounded-xl text-sm font-semibold bg-[var(--down)] text-white hover:shadow-[0_0_24px_rgba(248,113,113,0.3)] transition-shadow"
+                className="px-6 py-2.5 rounded-xl text-sm font-semibold bg-[var(--down)] text-white hover:shadow-[0_0_24px_rgba(248,113,113,0.3)] transition-shadow btn-press mobile-press"
               >
                 卖出
               </motion.button>

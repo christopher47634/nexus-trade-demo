@@ -83,7 +83,7 @@ export default function MobilePortfolioPage() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="mx-4 mt-3 mb-2 p-5 rounded-2xl overflow-hidden relative"
+        className="mx-4 mt-3 mb-2 p-5 rounded-2xl overflow-hidden relative page-enter"
         style={{
           background:
             "linear-gradient(135deg, rgba(212,165,116,0.12) 0%, rgba(255,255,255,0.04) 100%)",

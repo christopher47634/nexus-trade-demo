@@ -207,7 +207,7 @@ export default function TradePanel({
                   <button
                     onClick={() => setSide("buy")}
                     className={cn(
-                      "flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200",
+                      "flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 btn-press",
                       side === "buy"
                         ? "bg-[var(--up)] text-[var(--bg-primary)]"
                         : "bg-[var(--up-bg)] text-[var(--up)] border border-[var(--up)]"
@@ -218,7 +218,7 @@ export default function TradePanel({
                   <button
                     onClick={() => setSide("sell")}
                     className={cn(
-                      "flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200",
+                      "flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 btn-press",
                       side === "sell"
                         ? "bg-[var(--down)] text-white"
                         : "bg-[var(--down-bg)] text-[var(--down)] border border-[var(--down)]"
@@ -449,7 +449,7 @@ export default function TradePanel({
                   disabled={quantity <= 0 || priceNum <= 0}
                   data-demo-highlight="confirm-buy"
                   className={cn(
-                    "w-full py-3 rounded-xl text-sm font-semibold transition-all duration-200",
+                    "w-full py-3 rounded-xl text-sm font-semibold transition-all duration-200 btn-press",
                     side === "buy"
                       ? "bg-[var(--up)] text-[var(--bg-primary)] hover:shadow-[0_0_20px_rgba(52,211,153,0.3)]"
                       : "bg-[var(--down)] text-white hover:shadow-[0_0_20px_rgba(248,113,113,0.3)]",
@@ -562,7 +562,7 @@ export default function TradePanel({
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={handleCancelConfirm}
-                    className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-[var(--surface-2)] text-[var(--text-secondary)] hover:bg-[var(--surface-3)] transition-colors"
+                    className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-[var(--surface-2)] text-[var(--text-secondary)] hover:bg-[var(--surface-3)] transition-colors btn-press"
                   >
                     取消
                   </motion.button>
@@ -571,7 +571,7 @@ export default function TradePanel({
                     whileTap={{ scale: 0.98 }}
                     onClick={handleConfirmOrder}
                     className={cn(
-                      "flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200",
+                      "flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 btn-press",
                       side === "buy"
                         ? "bg-[var(--up)] text-[var(--bg-primary)]"
                         : "bg-[var(--down)] text-white"

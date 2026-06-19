@@ -98,7 +98,7 @@ export default function OrdersPage() {
   };
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <div className="p-6 max-w-5xl mx-auto page-enter">
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -192,7 +192,7 @@ export default function OrdersPage() {
                   >
                     <div
                       onClick={() => toggleExpand(order.id)}
-                      className="grid grid-cols-[160px_1fr_70px_90px_80px_110px_80px_140px] gap-2 px-5 py-3 text-sm items-center hover:bg-[var(--surface-2)] transition-colors duration-150 cursor-pointer"
+                      className="grid grid-cols-[160px_1fr_70px_90px_80px_110px_80px_140px] gap-2 px-5 py-3 text-sm items-center hover:bg-[var(--surface-2)] transition-colors duration-150 cursor-pointer row-interactive"
                     >
                       <span className="text-[var(--text-secondary)] text-xs font-mono font-semibold">
                         {order.id}

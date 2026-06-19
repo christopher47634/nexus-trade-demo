@@ -102,7 +102,7 @@ export default function PositionTable({
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.25, delay: i * 0.03 }}
               onClick={() => router.push(`/stocks/${pos.stockCode}`)}
-              className="grid px-5 text-sm items-center hover:bg-[var(--surface-2)] transition-colors duration-150 cursor-pointer"
+              className="grid px-5 text-sm items-center hover:bg-[var(--surface-2)] transition-colors duration-150 cursor-pointer row-interactive"
               style={{
                 gridTemplateColumns: GRID_COLS,
                 minHeight: "68px",

@@ -28,7 +28,7 @@ export default function PositionCard({ position, index }: PositionCardProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, delay: index * 0.04 }}
       onClick={() => router.push(`/mobile/trade/${position.stockCode}`)}
-      className="p-4 rounded-xl cursor-pointer hover:brightness-110 transition-all"
+      className="p-4 rounded-xl cursor-pointer hover:brightness-110 transition-all card-interactive mobile-press"
       style={{
         background:
           "linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)), rgba(15,22,36,0.6)",

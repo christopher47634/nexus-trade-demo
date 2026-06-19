@@ -70,7 +70,7 @@ export default function MobileShell({
               <button
                 key={tab.label}
                 onClick={() => setInternalTab(i)}
-                className="relative flex flex-col items-center gap-0.5 flex-1 py-1"
+                className="relative flex flex-col items-center gap-0.5 flex-1 py-1 mobile-press"
               >
                 <div className="relative">
                   <Icon

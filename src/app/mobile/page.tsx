@@ -163,7 +163,7 @@ function SectorCards() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 + i * 0.04 }}
-              className="flex-shrink-0 w-[120px] p-3.5 rounded-xl relative overflow-hidden group"
+              className="flex-shrink-0 w-[120px] p-3.5 rounded-xl relative overflow-hidden group mobile-press"
               style={{
                 background:
                   "linear-gradient(145deg, rgba(255,255,255,0.075), rgba(255,255,255,0.025)), rgba(15,22,36,0.72)",
@@ -248,7 +248,7 @@ function MiniRanking() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 + i * 0.04 }}
               className={cn(
-                "flex items-center gap-3 px-4 py-3",
+                "flex items-center gap-3 px-4 py-3 mobile-press",
                 i < topGainers.length - 1 &&
                   "border-b border-[var(--border-subtle)]"
               )}

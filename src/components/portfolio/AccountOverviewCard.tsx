@@ -58,7 +58,7 @@ export default function AccountOverviewCard({
         delay: delay * 0.08,
         ease: [0.25, 0.46, 0.45, 0.94],
       }}
-      className="glass p-5 relative overflow-hidden"
+      className="glass p-5 relative overflow-hidden card-interactive"
     >
     <FlowHoverSurface variant="card">
       {/* Subtle ambient glow */}
