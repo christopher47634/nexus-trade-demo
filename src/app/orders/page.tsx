@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ClipboardList, BarChart3, PlayCircle, AlertCircle } from "lucide-react";
 import { getOrders, MockOrder } from "@/mock/orders";
+import { getDemoOrders, isDemoModeActive, ensureDemoTradeSeeded } from "@/lib/account-storage";
 import EmptyState from "@/components/common/EmptyState";
 
 const STATUS_MAP: Record<
@@ -74,7 +75,12 @@ export default function OrdersPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
-    setOrders(getOrders());
+    if (isDemoModeActive()) {
+      ensureDemoTradeSeeded(); // 兜底：确保 demo 数据存在
+    }
+    const normalOrders = getOrders();
+    const demoOrders = isDemoModeActive() ? getDemoOrders<MockOrder & { source?: string }>() : [];
+    setOrders([...demoOrders, ...normalOrders]);
   }, []);
 
   const handleStartDemo = () => {
@@ -219,13 +225,21 @@ export default function OrdersPage() {
                           minimumFractionDigits: 2,
                         })}
                       </span>
-                      <span className="flex justify-center">
+                      <span className="flex justify-center items-center gap-1">
                         <span
                           className="px-2 py-0.5 rounded-full text-xs font-medium"
                           style={{ color: st.color, backgroundColor: st.bg }}
                         >
                           {st.label}
                         </span>
+                        {(order as MockOrder & { source?: string }).source === 'demo' && (
+                          <span
+                            className="px-1.5 py-0.5 rounded text-[10px] font-medium"
+                            style={{ color: '#D4A574', background: 'rgba(212,165,116,0.12)' }}
+                          >
+                            演示
+                          </span>
+                        )}
                       </span>
                       <span className="text-right text-[var(--text-muted)] text-xs">
                         {relativeTime(order.createdAt)}

@@ -10,6 +10,7 @@ import {
 } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, X, Sparkles } from "lucide-react";
+import { setDemoActive, resetDemoData } from "@/lib/account-storage";
 
 /* ─────────────────────────── Context ─────────────────────────── */
 
@@ -38,13 +39,15 @@ export function useDemo() {
 /* ──────────────────────── Demo Steps Data ────────────────────── */
 
 export const demoSteps = [
-  "热点板块 · 光通信",
-  "成交额领先成分股",
-  "多图表视图 · 日K/周K/月K",
-  "模拟交易流程",
-  "订单参数预览",
-  "提交模拟委托",
-  "查看订单回执",
+  "市场机会扫描",
+  "热点板块识别",
+  "板块成分股分析",
+  "个股技术视图",
+  "模拟交易入口",
+  "确认模拟委托",
+  "订单成交回执",
+  "订单记录归档",
+  "持仓与账户变化",
   "交易闭环完成",
 ];
 
@@ -76,6 +79,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   const startDemo = useCallback(() => {
     setDemoMode(true);
     setCurrentStep(0);
+    setDemoActive(true);
   }, []);
 
   const stopDemo = useCallback(() => {
@@ -83,6 +87,8 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     setCurrentStep(0);
     localStorage.removeItem("demoMode");
     localStorage.removeItem("demoModeStep");
+    resetDemoData();
+    setDemoActive(false);
   }, []);
 
   const nextStep = useCallback(() => {
@@ -92,6 +98,8 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         setDemoMode(false);
         localStorage.removeItem("demoMode");
         localStorage.removeItem("demoModeStep");
+        resetDemoData();
+        setDemoActive(false);
         return 0;
       }
       return prev + 1;

@@ -7,6 +7,10 @@ import {
   initializeAccount,
   getAccount,
   getPositions,
+  isDemoModeActive,
+  ensureDemoTradeSeeded,
+  getDemoAccountOverlay,
+  applyDemoAccountOverlay,
 } from "@/lib/account-storage";
 import { formatCurrency } from "@/lib/utils";
 import type { AccountSummary, Position } from "@/types/account";
@@ -19,8 +23,40 @@ export default function MobilePortfolioPage() {
 
   useEffect(() => {
     initializeAccount();
-    setAccount(getAccount());
-    setPositions(getPositions());
+    const baseAccount = getAccount();
+    const basePositions = getPositions();
+
+    if (isDemoModeActive()) {
+      ensureDemoTradeSeeded(); // 兜底：确保 demo 数据存在
+      const overlay = getDemoAccountOverlay();
+      const demoPositions = overlay.positions;
+
+      // Merge positions
+      const mergedPositions = [...basePositions];
+      for (const dp of demoPositions) {
+        const existing = mergedPositions.find((p) => p.stockCode === dp.stockCode);
+        if (existing) {
+          existing.quantity += dp.quantity;
+          existing.availableQuantity += dp.availableQuantity;
+          existing.marketValue += dp.marketValue;
+          const totalQty = existing.quantity;
+          existing.avgCost = totalQty > 0
+            ? Number((((existing.avgCost * (totalQty - dp.quantity)) + (dp.avgCost * dp.quantity)) / totalQty).toFixed(2))
+            : existing.avgCost;
+          existing.unrealizedPnL += dp.unrealizedPnL;
+          existing.todayPnL += dp.todayPnL;
+        } else {
+          mergedPositions.push(dp);
+        }
+      }
+
+      const adjustedAccount = applyDemoAccountOverlay(baseAccount, overlay);
+      setAccount(adjustedAccount);
+      setPositions(mergedPositions);
+    } else {
+      setAccount(baseAccount);
+      setPositions(basePositions);
+    }
   }, []);
 
   if (!account) {

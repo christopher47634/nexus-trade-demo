@@ -49,6 +49,7 @@ export default function TransactionList({
         delay: delay * 0.08,
         ease: [0.25, 0.46, 0.45, 0.94],
       }}
+      data-demo-highlight="transaction-list"
       className="glass overflow-hidden rounded-xl"
     >
       {/* Header */}
