@@ -122,13 +122,13 @@ export default function StockDetailPage() {
           transition={{ duration: 0.4 }}
           className="glass p-5 rounded-2xl"
         >
-          <div className="flex items-start justify-between">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
             <div>
-              <div className="flex items-center gap-3 mb-1">
-                <h1 className="text-xl font-bold text-[var(--text-primary)]">
+              <div className="flex items-center gap-2 md:gap-3 mb-1 flex-wrap">
+                <h1 className="text-lg md:text-xl font-bold text-[var(--text-primary)]">
                   {stock.name}
                 </h1>
-                <span className="text-sm text-[var(--text-muted)] font-mono-nums">
+                <span className="text-xs md:text-sm text-[var(--text-muted)] font-mono-nums">
                   {stock.code}
                 </span>
                 <span
@@ -153,21 +153,21 @@ export default function StockDetailPage() {
                   {stock.sectorId}
                 </button>
               </div>
-              <div className="flex items-baseline gap-3">
+              <div className="flex items-baseline gap-2 md:gap-3">
                 <span
                   className={cn(
-                    "text-3xl font-bold font-mono-nums",
+                    "text-2xl md:text-3xl font-bold font-mono-nums",
                     isUp ? "text-up" : "text-down"
                   )}
                 >
                   {stock.price.toFixed(2)}
                 </span>
                 <div className={cn("flex items-center gap-1", isUp ? "text-up" : "text-down")}>
-                  {isUp ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
-                  <span className="text-sm font-semibold font-mono-nums">
+                  {isUp ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                  <span className="text-xs md:text-sm font-semibold font-mono-nums">
                     {formatPercent(stock.changePercent)}
                   </span>
-                  <span className="text-xs font-mono-nums">
+                  <span className="text-[11px] md:text-xs font-mono-nums">
                     ({stock.changeAmount > 0 ? "+" : ""}
                     {stock.changeAmount.toFixed(2)})
                   </span>
@@ -175,24 +175,38 @@ export default function StockDetailPage() {
               </div>
             </div>
 
-            {/* Buy/Sell buttons */}
-            <div className="flex gap-2">
+            {/* Buy/Sell buttons — glassmorphism */}
+            <div className="flex gap-2 shrink-0">
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={handleBuy}
                 data-demo-highlight="buy-button"
-                className="px-6 py-2.5 rounded-xl text-sm font-semibold bg-[var(--up)] text-[var(--bg-primary)] hover:shadow-[0_0_24px_rgba(52,211,153,0.3)] transition-shadow btn-press mobile-press"
+                className="relative px-5 md:px-6 py-2 md:py-2.5 rounded-xl text-sm font-semibold text-white transition-all btn-press mobile-press overflow-hidden"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(52,211,153,0.25) 0%, rgba(52,211,153,0.08) 100%)',
+                  border: '1px solid rgba(52,211,153,0.35)',
+                  backdropFilter: 'blur(12px)',
+                  boxShadow: '0 2px 12px rgba(52,211,153,0.15), inset 0 1px 0 rgba(255,255,255,0.06)',
+                  textShadow: '0 1px 2px rgba(0,0,0,0.3)',
+                }}
               >
-                买入
+                <span className="relative z-10 text-[#34D399] font-bold">买入</span>
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={handleSell}
-                className="px-6 py-2.5 rounded-xl text-sm font-semibold bg-[var(--down)] text-white hover:shadow-[0_0_24px_rgba(248,113,113,0.3)] transition-shadow btn-press mobile-press"
+                className="relative px-5 md:px-6 py-2 md:py-2.5 rounded-xl text-sm font-semibold text-white transition-all btn-press mobile-press overflow-hidden"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(248,113,113,0.25) 0%, rgba(248,113,113,0.08) 100%)',
+                  border: '1px solid rgba(248,113,113,0.35)',
+                  backdropFilter: 'blur(12px)',
+                  boxShadow: '0 2px 12px rgba(248,113,113,0.15), inset 0 1px 0 rgba(255,255,255,0.06)',
+                  textShadow: '0 1px 2px rgba(0,0,0,0.3)',
+                }}
               >
-                卖出
+                <span className="relative z-10 text-[#F87171] font-bold">卖出</span>
               </motion.button>
             </div>
           </div>
